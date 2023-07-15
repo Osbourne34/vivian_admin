@@ -1,0 +1,44 @@
+{
+  "name": "admin-panel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "json-server": "json-server --watch --port 3001 data.json",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/server": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.13.7",
+    "@mui/lab": "^5.0.0-alpha.136",
+    "@mui/material": "^5.13.7",
+    "@mui/x-data-grid": "^6.9.2",
+    "axios": "^1.4.0",
+    "js-cookie": "^3.0.5",
+    "next": "13.4.9",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.45.1",
+    "react-number-format": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/js-cookie": "^3.0.3",
+    "@types/node": "^20.4.2",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.45.0",
+    "eslint-config-next": "^13.4.10",
+    "json-server": "^0.17.3",
+    "postcss": "^8.4.26",
+    "prettier-plugin-tailwindcss": "^0.4.1",
+    "tailwindcss": "^3.3.3",
+    "typescript": "^5.1.6"
+  }
+}
