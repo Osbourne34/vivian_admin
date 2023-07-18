@@ -1,4 +1,4 @@
-import { Alert, Button, FormHelperText, TextField } from '@mui/material'
+import { Alert, FormControl, FormHelperText, TextField } from '@mui/material'
 import { useForm, Controller, SubmitHandler } from 'react-hook-form'
 import LoadingButton from '@mui/lab/LoadingButton'
 
@@ -46,20 +46,16 @@ export const LoginForm = () => {
       const err = error as Error
 
       if (err?.errors) {
-        let temp = new Map<string, Array<string>>()
+        let temp = new Map()
         err.errors.forEach((item) => {
           let key = temp.get(item.input) ?? []
           key.push(item.message)
           temp.set(item.input, key)
         })
 
-        console.log(temp)
-
-        for (let entry of temp.entries()) {
-          setErrorForm(entry[0], { message: entry[1] })
-        }
-
-        //  setErrorForm(item[0], { message: item[1] })
+        temp.forEach((value, key) => {
+          setErrorForm(key, { message: value.join(',') })
+        })
       }
 
       setError(err?.message!)
@@ -67,7 +63,7 @@ export const LoginForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
       {error && (
         <Alert variant="filled" severity="error">
           {error}
@@ -79,7 +75,7 @@ export const LoginForm = () => {
         control={control}
         rules={{ required: 'Обязательное поле' }}
         render={({ field }) => (
-          <>
+          <FormControl>
             <TextField
               label="Номер телефона"
               InputLabelProps={{ shrink: true }}
@@ -91,10 +87,12 @@ export const LoginForm = () => {
               {...field}
             />
             {errors.phone &&
-              errors.phone.message.map((text) => (
-                <FormHelperText error>{text}</FormHelperText>
+              errors.phone.message?.split(',').map((text) => (
+                <FormHelperText key={text} error>
+                  {text}
+                </FormHelperText>
               ))}
-          </>
+          </FormControl>
         )}
       />
 
@@ -103,10 +101,10 @@ export const LoginForm = () => {
         control={control}
         rules={{
           required: 'Обязательное поле',
-          minLength: { value: 3, message: 'Минимум 6 символов' },
+          minLength: { value: 6, message: 'Минимум 6 символов' },
         }}
         render={({ field }) => (
-          <>
+          <FormControl>
             <TextField
               type="password"
               label="Пароль"
@@ -116,10 +114,12 @@ export const LoginForm = () => {
               {...field}
             />
             {errors.password &&
-              errors.password.message.map((text) => (
-                <FormHelperText error>{text}</FormHelperText>
+              errors.password.message?.split(',').map((text) => (
+                <FormHelperText key={text} error>
+                  {text}
+                </FormHelperText>
               ))}
-          </>
+          </FormControl>
         )}
       />
 

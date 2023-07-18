@@ -1,23 +1,15 @@
 import React, { ReactNode } from 'react'
 
-import NextLink from 'next/link'
-import { useRouter } from 'next/router'
-
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemText from '@mui/material/ListItemText'
 import MenuIcon from '@mui/icons-material/Menu'
 import Toolbar from '@mui/material/Toolbar'
 
 import { routes } from '../routes/routes'
-import { Collapse } from '@mui/material'
-import { ExpandLess, ExpandMore } from '@mui/icons-material'
-import { SidebarMenu } from './sidebar-menu/sidebar-menu'
 import { Avatar } from './avatar/avatar'
+import { SidebarMenu } from './sidebar-menu/sidebar-menu'
 
 const drawerWidth = 300
 
@@ -26,63 +18,15 @@ interface LayoutProps {
 }
 
 const Layout = (props: LayoutProps) => {
-  const router = useRouter()
   const [mobileOpen, setMobileOpen] = React.useState(false)
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
 
-  const [open, setOpen] = React.useState(false)
-
-  const handleClick = () => {
-    setOpen(!open)
-  }
-
   const drawer = (
     <div>
-      <List>
-        {/* {routes.map(({ title, children, link, id }) => {
-          if (link) {
-            return (
-              <ListItemButton
-                key={id}
-                href={link}
-                component={NextLink}
-                selected={router.pathname === link}
-              >
-                <ListItemText primary={title} />
-              </ListItemButton>
-            )
-          } else {
-            return (
-              <>
-                <ListItemButton onClick={handleClick} key={id}>
-                  <ListItemText primary={title} />
-                  {open ? <ExpandLess /> : <ExpandMore />}
-                </ListItemButton>
-                <Collapse in={open} timeout="auto" unmountOnExit>
-                  <List disablePadding>
-                    {children?.map(({ id, link, title }) => (
-                      <ListItemButton
-                        key={id}
-                        sx={{ pl: 4 }}
-                        href={link}
-                        component={NextLink}
-                        selected={router.pathname === link}
-                      >
-                        <ListItemText primary={title} />
-                      </ListItemButton>
-                    ))}
-                  </List>
-                </Collapse>
-              </>
-            )
-          }
-        })} */}
-
-        {/* <SidebarMenu items={routes} /> */}
-      </List>
+      <SidebarMenu items={routes} />
     </div>
   )
 

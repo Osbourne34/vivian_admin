@@ -2,7 +2,7 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 
 export const http = axios.create({
-  baseURL: 'http://192.168.0.193:8080',
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
