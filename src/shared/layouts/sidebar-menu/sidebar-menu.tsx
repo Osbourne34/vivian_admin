@@ -3,6 +3,7 @@ import { Collapse, List, ListItemButton, ListItemText } from '@mui/material'
 import React from 'react'
 import { useState } from 'react'
 import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 
 type MenuItemBase = {
   id: string
@@ -32,6 +33,7 @@ const MenuItem = ({
   items: MenuItem[]
   level?: number
 }) => {
+  const router = useRouter()
   const [open, setOpen] = useState<string[]>([])
 
   const isChild = (children?: MenuItem[]) => {
@@ -57,6 +59,7 @@ const MenuItem = ({
               href={isChild(children) ? '' : link}
               sx={{ pl: 2 * level }}
               onClick={() => handleOpen(id)}
+              selected={router.pathname === link}
             >
               <ListItemText primary={title} />
               {isChild(children) && (

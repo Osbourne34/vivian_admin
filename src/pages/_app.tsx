@@ -12,6 +12,7 @@ import { theme, createEmotionCache } from '@/shared/theme'
 const clientSideEmotionCache = createEmotionCache()
 
 import '@/shared/styles/globals.css'
+import { SnackbarProvider } from 'notistack'
 
 type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -36,7 +37,12 @@ export default function MyApp(props: AppPropsWithLayout) {
       </Head>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {getLayout(<Component {...pageProps} />)}
+        <SnackbarProvider
+          anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
+          autoHideDuration={5000}
+        >
+          {getLayout(<Component {...pageProps} />)}
+        </SnackbarProvider>
       </ThemeProvider>
     </CacheProvider>
   )

@@ -27,6 +27,7 @@ http.interceptors.response.use(
     if (error.response) {
       // Ошибка авторизаций
       if (error.response.status === 401) {
+        Cookies.remove('token')
         return Promise.reject({
           message: error.response.data.message,
           status: error.response.status,
