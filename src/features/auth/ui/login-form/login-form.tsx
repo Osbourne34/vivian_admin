@@ -78,7 +78,6 @@ export const LoginForm = () => {
           <FormControl>
             <TextField
               label="Номер телефона"
-              InputLabelProps={{ shrink: true }}
               InputProps={{
                 inputComponent: NumericFormatCustom as any,
               }}
@@ -108,7 +107,6 @@ export const LoginForm = () => {
             <TextField
               type="password"
               label="Пароль"
-              InputLabelProps={{ shrink: true }}
               variant="outlined"
               error={!!errors.password}
               {...field}

@@ -1,14 +1,27 @@
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { PatternFormat, PatternFormatProps } from 'react-number-format'
 
 interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void
+  onFocus: () => void
+  onBlur: () => void
   name: string
 }
 
 export const NumericFormatCustom = forwardRef<PatternFormatProps, CustomProps>(
   function NumericFormatCustom(props, ref) {
-    const { onChange, ...other } = props
+    const { onChange, onFocus, onBlur, ...other } = props
+    const [state, setState] = useState(false)
+
+    const handleFocus = () => {
+      onFocus()
+      setState(true)
+    }
+
+    const handleBlur = () => {
+      onBlur()
+      setState(false)
+    }
 
     return (
       <PatternFormat
@@ -22,10 +35,12 @@ export const NumericFormatCustom = forwardRef<PatternFormatProps, CustomProps>(
             },
           })
         }}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         format="+998 (##) ###-##-##"
         mask="_"
-        allowEmptyFormatting
+        allowEmptyFormatting={state}
       />
     )
-  }
+  },
 )

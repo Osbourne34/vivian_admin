@@ -115,8 +115,6 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
           </Alert>
         )}
 
-        
-
         <Controller
           name="name"
           control={control}
@@ -127,7 +125,6 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
             <FormControl>
               <TextField
                 label="Имя"
-                InputLabelProps={{ shrink: true }}
                 variant="outlined"
                 error={!!errors.name}
                 {...field}
@@ -150,7 +147,6 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
             <FormControl>
               <TextField
                 label="Номер телефона"
-                InputLabelProps={{ shrink: true }}
                 InputProps={{
                   inputComponent: NumericFormatCustom as any,
                 }}
@@ -173,17 +169,7 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
           control={control}
           render={({ field }) => (
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
-              <DatePicker
-                slotProps={{
-                  textField: {
-                    InputLabelProps: {
-                      shrink: true,
-                    },
-                  },
-                }}
-                label="День рождения"
-                {...field}
-              />
+              <DatePicker label="День рождения" {...field} />
             </LocalizationProvider>
           )}
         />
@@ -193,12 +179,7 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
           control={control}
           render={({ field }) => (
             <FormControl>
-              <TextField
-                label="Адресс"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                {...field}
-              />
+              <TextField label="Адресс" variant="outlined" {...field} />
             </FormControl>
           )}
         />
@@ -208,12 +189,7 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
           control={control}
           render={({ field }) => (
             <FormControl>
-              <TextField
-                label="Описание"
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                {...field}
-              />
+              <TextField label="Описание" variant="outlined" {...field} />
             </FormControl>
           )}
         />
@@ -230,7 +206,6 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
               <TextField
                 type="password"
                 label="Пароль"
-                InputLabelProps={{ shrink: true }}
                 variant="outlined"
                 error={!!errors.password}
                 {...field}
@@ -259,7 +234,6 @@ export const CreateAdminForm = (props: CreateAdminFormProps) => {
               <TextField
                 type="password"
                 label="Повторите пароль"
-                InputLabelProps={{ shrink: true }}
                 variant="outlined"
                 error={!!errors.password_confirmation}
                 {...field}
