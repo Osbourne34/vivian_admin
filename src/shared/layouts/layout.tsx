@@ -17,7 +17,7 @@ interface LayoutProps {
   children: ReactNode
 }
 
-const Layout = (props: LayoutProps) => {
+export const Layout = (props: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = React.useState(false)
 
   const handleDrawerToggle = () => {
@@ -99,5 +99,3 @@ const Layout = (props: LayoutProps) => {
     </Box>
   )
 }
-
-export default Layout

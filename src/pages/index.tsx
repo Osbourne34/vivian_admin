@@ -1,5 +1,5 @@
 import { ReactElement, useEffect, useState } from 'react'
-import Layout from '@/shared/layouts/layout'
+import { Layout } from '@/shared/layouts/layout'
 import {
   DataGrid,
   GridPagination,
@@ -63,7 +63,7 @@ const Home = () => {
             paginationModel.pageSize
           }&_page=${paginationModel.page + 1}&_sort=${
             sortParams.field
-          }&_order=${sortParams.sort}&q=${searchValue}`
+          }&_order=${sortParams.sort}&q=${searchValue}`,
         )
         const totalCount = response.headers.get('X-Total-Count')
         const data = await response.json()
