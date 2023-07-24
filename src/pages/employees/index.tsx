@@ -33,7 +33,7 @@ import { EmployeesService } from '@/features/employees'
 import { Layout } from '@/shared/layouts/layout'
 import { useRouter } from 'next/router'
 import { Employee } from '@/features/employees/types/employee'
-import { Error, ResponseWithData, ResponseWithPagination } from '@/shared/http'
+import { Error, ResponseWithPagination } from '@/shared/http'
 
 const Pagination = ({
   className,
@@ -42,9 +42,6 @@ const Pagination = ({
   const page = useGridSelector(apiRef, gridPageSelector)
   const pageCount = useGridSelector(apiRef, gridRowCountSelector)
   const pageSize = useGridSelector(apiRef, gridPageSizeSelector)
-
-  console.log(pageCount, 'pageCount')
-  console.log(pageSize, 'pageSize')
 
   return (
     <MuiPagination
@@ -100,7 +97,7 @@ const Employees = () => {
   ])
   const [searchValue, setSeachValue] = useState<string>('')
 
-  const { data, isLoading, error, isError, refetch } = useQuery<
+  const { data, isLoading, isFetching, error, isError, refetch } = useQuery<
     ResponseWithPagination<Employee[]>,
     Error
   >({
@@ -142,7 +139,7 @@ const Employees = () => {
         <DataGrid
           columns={columns}
           rows={data?.data || []}
-          loading={isLoading}
+          loading={isFetching}
           filterMode="server"
           onFilterModelChange={onFilterChange}
           sortingMode="server"
