@@ -12,8 +12,9 @@ export const EmployeesService = {
   getEmployees: async (
     page: number = 1,
     perpage: number = 10,
-    orderby: string = '',
-    sort: string | null = null,
+    orderby: string | null = null,
+    sort: string = '',
+    search: string = '',
   ) => {
     const { data } = await http<ResponseWithPagination<Employee[]>>(
       'api/user/users',
@@ -23,6 +24,7 @@ export const EmployeesService = {
           perpage,
           sort,
           orderby,
+          search,
         },
       },
     )

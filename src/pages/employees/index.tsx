@@ -8,6 +8,7 @@ import { Layout } from '@/shared/layouts/layout'
 import {
   DataGrid,
   GridColDef,
+  GridFilterModel,
   gridPageSelector,
   gridPageSizeSelector,
   GridPagination,
@@ -66,6 +67,7 @@ const columns: GridColDef[] = [
     field: 'active',
     type: 'boolean',
     headerName: 'Активен',
+    sortable: false,
   },
 ]
 
@@ -81,15 +83,17 @@ const Employees = () => {
       sort: null,
     },
   ])
+  const [searchValue, setSeachValue] = useState<string>('')
 
   const { data, isLoading } = useQuery({
-    queryKey: ['employees', paginationModel, sortModel],
+    queryKey: ['employees', paginationModel, sortModel, searchValue],
     queryFn: () =>
       EmployeesService.getEmployees(
         paginationModel.page + 1,
         paginationModel.pageSize,
-        sortModel[0].field,
         sortModel[0].sort,
+        sortModel[0].field,
+        searchValue,
       ),
     onSuccess: (data) => {
       setCount(data.pagination.total)
@@ -99,6 +103,10 @@ const Employees = () => {
   const onSortModelChange = (data: GridSortModel) => {
     if (data.length) setSortModel(data)
     else setSortModel([{ field: '', sort: null }])
+  }
+
+  const onFilterChange = (data: GridFilterModel) => {
+    setSeachValue(data.quickFilterValues?.join('') || '')
   }
 
   return (
@@ -112,6 +120,8 @@ const Employees = () => {
           columns={columns}
           rows={data?.data || []}
           loading={isLoading}
+          filterMode="server"
+          onFilterModelChange={onFilterChange}
           sortingMode="server"
           onSortModelChange={onSortModelChange}
           paginationModel={paginationModel}
