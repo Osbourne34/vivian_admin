@@ -1,9 +1,15 @@
 import { ReactElement, useState } from 'react'
 import NextLink from 'next/link'
 
-import { Fab, TablePaginationProps, Typography } from '@mui/material'
+import {
+  Fab,
+  TablePaginationProps,
+  Typography,
+  Pagination as MuiPagination,
+  Alert,
+  Button,
+} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import { Layout } from '@/shared/layouts/layout'
 
 import {
   DataGrid,
@@ -21,8 +27,13 @@ import {
 } from '@mui/x-data-grid'
 
 import { useQuery } from '@tanstack/react-query'
+
 import { EmployeesService } from '@/features/employees'
-import MuiPagination from '@mui/material/Pagination'
+
+import { Layout } from '@/shared/layouts/layout'
+import { useRouter } from 'next/router'
+import { Employee } from '@/features/employees/types/employee'
+import { Error, ResponseWithData, ResponseWithPagination } from '@/shared/http'
 
 const Pagination = ({
   className,
@@ -44,6 +55,7 @@ const Pagination = ({
     />
   )
 }
+
 const CustomPagination = (props: any) => {
   return <GridPagination ActionsComponent={Pagination} {...props} />
 }
@@ -67,11 +79,12 @@ const columns: GridColDef[] = [
     field: 'active',
     type: 'boolean',
     headerName: 'Активен',
-    sortable: false,
   },
 ]
 
 const Employees = () => {
+  const router = useRouter()
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -85,7 +98,10 @@ const Employees = () => {
   ])
   const [searchValue, setSeachValue] = useState<string>('')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, isError, refetch } = useQuery<
+    ResponseWithPagination<Employee[]>,
+    Error
+  >({
     queryKey: ['employees', paginationModel, sortModel, searchValue],
     queryFn: () =>
       EmployeesService.getEmployees(
@@ -98,6 +114,13 @@ const Employees = () => {
     onSuccess: (data) => {
       setCount(data.pagination.total)
     },
+    onError: (error) => {
+      if (error?.status === 401) {
+        router.push('/login')
+      }
+    },
+    retry: 0,
+    staleTime: 20000,
   })
 
   const onSortModelChange = (data: GridSortModel) => {
@@ -129,7 +152,30 @@ const Employees = () => {
           paginationMode="server"
           rowCount={rowCount}
           pageSizeOptions={[10, 25, 50]}
-          slots={{ toolbar: GridToolbar, pagination: CustomPagination }}
+          slots={{
+            toolbar: GridToolbar,
+            pagination: CustomPagination,
+            noRowsOverlay: () => (
+              <div className="flex h-full flex-col items-center justify-center">
+                {isError ? (
+                  <>
+                    <Alert variant="filled" severity="error">
+                      {error?.message}
+                    </Alert>
+                    <Button
+                      onClick={() => refetch()}
+                      variant="outlined"
+                      className="mt-4"
+                    >
+                      Загрузить снова
+                    </Button>
+                  </>
+                ) : (
+                  <div>Нет строк</div>
+                )}
+              </div>
+            ),
+          }}
           slotProps={{
             toolbar: {
               showQuickFilter: true,
