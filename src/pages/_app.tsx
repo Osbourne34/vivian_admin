@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from 'react'
+import { ReactElement, ReactNode, useState } from 'react'
 
 import { NextPage } from 'next'
 import Head from 'next/head'
@@ -9,10 +9,13 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { CacheProvider, EmotionCache } from '@emotion/react'
 
 import { theme, createEmotionCache } from '@/shared/theme'
+
 const clientSideEmotionCache = createEmotionCache()
 
 import '@/shared/styles/globals.css'
 import { SnackbarProvider } from 'notistack'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -30,6 +33,8 @@ type AppPropsWithLayout = AppProps &
 export default function MyApp(props: AppPropsWithLayout) {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
   const getLayout = Component.getLayout ?? ((page) => page)
+  const [queryClient] = useState(() => new QueryClient())
+
   return (
     <CacheProvider value={emotionCache}>
       <Head>
@@ -41,7 +46,9 @@ export default function MyApp(props: AppPropsWithLayout) {
           anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
           autoHideDuration={5000}
         >
-          {getLayout(<Component {...pageProps} />)}
+          <QueryClientProvider client={queryClient}>
+            {getLayout(<Component {...pageProps} />)}
+          </QueryClientProvider>
         </SnackbarProvider>
       </ThemeProvider>
     </CacheProvider>

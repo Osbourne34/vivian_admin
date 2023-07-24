@@ -1,5 +1,5 @@
-import { http } from '@/shared/http'
-import { Dayjs } from 'dayjs'
+import { http, ResponseWithPagination } from '@/shared/http'
+import { Employee } from '../types/employee'
 
 export const EmployeesService = {
   createEmployees: (body: FormData) => {
@@ -8,5 +8,24 @@ export const EmployeesService = {
         'Content-Type': 'multipart/form-data',
       },
     })
+  },
+  getEmployees: async (
+    page: number = 1,
+    perpage: number = 10,
+    orderby: string = '',
+    sort: string | null = null,
+  ) => {
+    const { data } = await http<ResponseWithPagination<Employee[]>>(
+      'api/user/users',
+      {
+        params: {
+          page,
+          perpage,
+          sort,
+          orderby,
+        },
+      },
+    )
+    return data
   },
 }
