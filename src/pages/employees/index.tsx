@@ -43,6 +43,9 @@ const Pagination = ({
   const pageCount = useGridSelector(apiRef, gridRowCountSelector)
   const pageSize = useGridSelector(apiRef, gridPageSizeSelector)
 
+  console.log(pageCount, 'pageCount')
+  console.log(pageSize, 'pageSize')
+
   return (
     <MuiPagination
       color="primary"
@@ -89,7 +92,6 @@ const Employees = () => {
     page: 0,
     pageSize: 10,
   })
-  const [rowCount, setCount] = useState(0)
   const [sortModel, setSortModel] = useState<GridSortModel>([
     {
       field: '',
@@ -111,15 +113,13 @@ const Employees = () => {
         sortModel[0].field,
         searchValue,
       ),
-    onSuccess: (data) => {
-      setCount(data.pagination.total)
-    },
     onError: (error) => {
       if (error?.status === 401) {
         router.push('/login')
       }
     },
     retry: 0,
+    keepPreviousData: true,
     staleTime: 20000,
   })
 
@@ -150,7 +150,7 @@ const Employees = () => {
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           paginationMode="server"
-          rowCount={rowCount}
+          rowCount={data?.pagination.total || 0}
           pageSizeOptions={[10, 25, 50]}
           slots={{
             toolbar: GridToolbar,
