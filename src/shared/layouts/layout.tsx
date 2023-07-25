@@ -7,14 +7,74 @@ import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 import Toolbar from '@mui/material/Toolbar'
 
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+
 import { routes } from '../routes/routes'
 import { Avatar } from './avatar/avatar'
 import { SidebarMenu } from './sidebar-menu/sidebar-menu'
+import { useRouter } from 'next/router'
+import { TreeItem, TreeView } from '@mui/lab'
 
 const drawerWidth = 300
 
 interface LayoutProps {
   children: ReactNode
+}
+
+const Menu = () => {
+  const { pathname, push } = useRouter()
+  const [expanded, setExpanded] = React.useState<string[]>([
+    pathname.slice(0, pathname.lastIndexOf('/')) || pathname,
+  ])
+  const [selected, setSelected] = React.useState<string[]>([
+    pathname.slice(0, pathname.lastIndexOf('/')) || pathname,
+  ])
+
+  const handleToggle = (event: React.SyntheticEvent, nodeIds: string[]) => {
+    setExpanded(nodeIds)
+  }
+
+  const handleSelect = (event: React.SyntheticEvent, nodeIds: string[]) => {
+    setSelected(nodeIds)
+  }
+
+  return (
+    <TreeView
+      sx={{ py: 1 }}
+      selected={selected}
+      expanded={expanded}
+      onNodeToggle={handleToggle}
+      onNodeSelect={handleSelect}
+      defaultCollapseIcon={<ExpandMoreIcon />}
+      defaultExpandIcon={<ChevronRightIcon />}
+    >
+      <TreeItem
+        onClick={() => push('/')}
+        nodeId="/"
+        label="Дашбоард"
+        sx={{
+          '& .MuiTreeItem-content': {
+            pl: 1,
+            pr: 2,
+            py: 1.5,
+          },
+        }}
+      />
+      <TreeItem
+        onClick={() => push('/employees')}
+        nodeId="/employees"
+        label="Сотрудники"
+        sx={{
+          '& .MuiTreeItem-content': {
+            pl: 1,
+            pr: 2,
+            py: 1.5,
+          },
+        }}
+      />
+    </TreeView>
+  )
 }
 
 export const Layout = (props: LayoutProps) => {
@@ -26,7 +86,9 @@ export const Layout = (props: LayoutProps) => {
 
   const drawer = (
     <div>
-      <SidebarMenu items={routes} />
+      {/* <SidebarMenu items={routes} /> */}
+
+      <Menu />
     </div>
   )
 

@@ -122,11 +122,11 @@ export const CreateEmployeesForm = () => {
     }
 
     try {
-      const response = await EmployeesService.createEmployees(formData)
+      const { data } = await EmployeesService.createEmployees(formData)
       reset(initialForm)
       clearErrors('phone')
       setPreviewAvatar(null)
-      enqueueSnackbar(response.data.message, {
+      enqueueSnackbar(data.message, {
         variant: 'success',
       })
     } catch (error) {

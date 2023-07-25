@@ -1,5 +1,6 @@
-import { ReactElement, useState } from 'react'
+import { ReactElement, useCallback, useMemo, useRef, useState } from 'react'
 import NextLink from 'next/link'
+import { useRouter } from 'next/router'
 
 import {
   Fab,
@@ -8,17 +9,29 @@ import {
   Pagination as MuiPagination,
   Alert,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
+import { useSnackbar } from 'notistack'
+
 import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded'
 
 import {
   DataGrid,
+  GridActionsCellItem,
   GridColDef,
   GridFilterModel,
   gridPageSelector,
   gridPageSizeSelector,
   GridPagination,
   gridRowCountSelector,
+  GridRowId,
   GridSortModel,
   GridToolbar,
   ruRU,
@@ -26,14 +39,18 @@ import {
   useGridSelector,
 } from '@mui/x-data-grid'
 
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { EmployeesService } from '@/features/employees'
+import { Employee } from '@/features/employees/types/employee'
 
 import { Layout } from '@/shared/layouts/layout'
-import { useRouter } from 'next/router'
-import { Employee } from '@/features/employees/types/employee'
-import { Error, ResponseWithPagination } from '@/shared/http'
+
+import {
+  Error,
+  ResponseWithMessage,
+  ResponseWithPagination,
+} from '@/shared/http'
 
 const Pagination = ({
   className,
@@ -60,30 +77,10 @@ const CustomPagination = (props: any) => {
   return <GridPagination ActionsComponent={Pagination} {...props} />
 }
 
-const columns: GridColDef[] = [
-  {
-    field: 'id',
-    headerName: 'ID',
-  },
-  {
-    field: 'name',
-    headerName: 'Имя',
-    flex: 1,
-  },
-  {
-    field: 'phone',
-    headerName: 'Телефон',
-    flex: 1,
-  },
-  {
-    field: 'active',
-    type: 'boolean',
-    headerName: 'Активен',
-  },
-]
-
 const Employees = () => {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { enqueueSnackbar } = useSnackbar()
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -97,7 +94,10 @@ const Employees = () => {
   ])
   const [searchValue, setSeachValue] = useState<string>('')
 
-  const { data, isLoading, isFetching, error, isError, refetch } = useQuery<
+  const [open, setOpen] = useState(false)
+  const deleteId = useRef<GridRowId>()
+
+  const { data, isFetching, error, isError, refetch } = useQuery<
     ResponseWithPagination<Employee[]>,
     Error
   >({
@@ -119,6 +119,33 @@ const Employees = () => {
     keepPreviousData: true,
     staleTime: 20000,
   })
+  const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
+    mutationFn: EmployeesService.deleteEmployees,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['employees'])
+      handleClose()
+      enqueueSnackbar(data.message, {
+        variant: 'success',
+      })
+    },
+    onError: (error) => {
+      if (error?.status === 401) {
+        router.push('/login')
+      } else {
+        enqueueSnackbar(error?.message, {
+          variant: 'error',
+        })
+      }
+    },
+  })
+
+  const handleClickOpen = () => {
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+  }
 
   const onSortModelChange = (data: GridSortModel) => {
     if (data.length) setSortModel(data)
@@ -128,6 +155,63 @@ const Employees = () => {
   const onFilterChange = (data: GridFilterModel) => {
     setSeachValue(data.quickFilterValues?.join('') || '')
   }
+
+  const deleteEmployees = useCallback(
+    (id: GridRowId) => () => {
+      handleClickOpen()
+      deleteId.current = id
+    },
+    [],
+  )
+
+  const editEmployees = useCallback((id: GridRowId) => () => {}, [])
+
+  const confirmDeletionEmployees = () => {
+    deleteMutation.mutate(Number(deleteId.current))
+  }
+
+  const columns = useMemo<GridColDef[]>(
+    () => [
+      {
+        field: 'id',
+        headerName: 'ID',
+      },
+      {
+        field: 'name',
+        headerName: 'Имя',
+        flex: 1,
+      },
+      {
+        field: 'phone',
+        headerName: 'Телефон',
+        flex: 1,
+      },
+      {
+        field: 'active',
+        type: 'boolean',
+        headerName: 'Активен',
+      },
+      {
+        field: 'actions',
+        type: 'actions',
+        getActions: ({ id }) => [
+          <GridActionsCellItem
+            key={2}
+            icon={<ModeEditOutlineRoundedIcon color="primary" />}
+            label="Редактировать"
+            onClick={deleteEmployees(id)}
+          />,
+          <GridActionsCellItem
+            key={1}
+            icon={<DeleteIcon color="error" />}
+            label="Удалить"
+            onClick={deleteEmployees(id)}
+          />,
+        ],
+      },
+    ],
+    [deleteEmployees, editEmployees],
+  )
 
   return (
     <div>
@@ -192,6 +276,32 @@ const Employees = () => {
       >
         <AddIcon />
       </Fab>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Подтвердите действие</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Вы действительно хотите удалить этого сотрудника?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            disabled={deleteMutation.isLoading}
+            onClick={handleClose}
+            variant="outlined"
+          >
+            Отмена
+          </Button>
+          <LoadingButton
+            loading={deleteMutation.isLoading}
+            onClick={confirmDeletionEmployees}
+            variant="contained"
+            color="error"
+          >
+            Удалить
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }

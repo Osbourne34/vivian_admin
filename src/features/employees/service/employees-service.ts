@@ -1,4 +1,8 @@
-import { http, ResponseWithPagination } from '@/shared/http'
+import {
+  http,
+  ResponseWithMessage,
+  ResponseWithPagination,
+} from '@/shared/http'
 import { Employee } from '../types/employee'
 
 export const EmployeesService = {
@@ -9,6 +13,7 @@ export const EmployeesService = {
       },
     })
   },
+
   getEmployees: async (
     page: number = 1,
     perpage: number = 10,
@@ -28,6 +33,14 @@ export const EmployeesService = {
         },
       },
     )
+    return data
+  },
+
+  deleteEmployees: async (id: number) => {
+    const { data } = await http.delete<ResponseWithMessage>(
+      `api/user/users/${id}`,
+    )
+
     return data
   },
 }
