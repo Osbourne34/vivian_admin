@@ -122,7 +122,7 @@ const Home = () => {
       <DataGrid
         rows={products}
         columns={columns}
-        loading={isLoading}
+        loading={true}
         sortingMode="server"
         onSortModelChange={onSortModelChange}
         filterMode="server"

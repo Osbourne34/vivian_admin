@@ -1,91 +1,107 @@
+import { routes } from '@/shared/routes/routes'
 import { ExpandLess, ExpandMore } from '@mui/icons-material'
 import { Collapse, List, ListItemButton, ListItemText } from '@mui/material'
+import { useRouter } from 'next/router'
 import React from 'react'
 import { useState } from 'react'
-import NextLink from 'next/link'
-import { useRouter } from 'next/router'
 
-type MenuItemBase = {
-  id: string
-  title: string
-}
+export const SidebarMenu = () => {
+  const { pathname, push } = useRouter()
+  const [opened, setOpened] = useState<string[]>(() => {
+    const ids: string[] = []
+    routes.forEach((route) => {
+      if (route.children) {
+        const found = route.children.find(({ link }) => pathname === link)
+        if (found) {
+          ids.push(route.id)
+        }
+      }
+    })
 
-type MenuItemLink = MenuItemBase & {
-  link: string
-  children?: never
-}
+    return ids
+  })
 
-type MenuItemChildren = MenuItemBase & {
-  children: MenuItem[]
-  link?: never
-}
-
-type MenuItem = MenuItemLink | MenuItemChildren
-
-interface SidebarMenuProps {
-  items: MenuItem[]
-}
-
-const MenuItem = ({
-  items,
-  level = 1,
-}: {
-  items: MenuItem[]
-  level?: number
-}) => {
-  const router = useRouter()
-  const [open, setOpen] = useState<string[]>([])
-
-  const isChild = (children?: MenuItem[]) => {
-    return children && children.length
+  const selected = (link?: string) => {
+    if (!link) false
+    return link === pathname
   }
 
-  const handleOpen = (openId: string) => {
-    if (open.includes(openId)) {
-      const newArray = open.filter((id) => id !== openId)
-      setOpen(newArray)
+  const handleOpen = (id: string) => {
+    if (opened.includes(id)) {
+      setOpened((prevState) => {
+        return prevState.filter((value) => value !== id)
+      })
     } else {
-      setOpen((prevState) => [...prevState, openId])
+      setOpened([...opened, id])
     }
   }
 
-  return (
-    <>
-      {items.map(({ children, id, link, title }) => {
-        return (
-          <React.Fragment key={id}>
-            <ListItemButton
-              component={isChild(children) ? 'div' : NextLink}
-              href={isChild(children) ? '' : link}
-              sx={{ pl: 2 * level }}
-              onClick={() => handleOpen(id)}
-              selected={router.pathname === link}
-            >
-              <ListItemText primary={title} />
-              {isChild(children) && (
-                <>{open.includes(id) ? <ExpandLess /> : <ExpandMore />}</>
-              )}
-            </ListItemButton>
-            {isChild(children) && (
-              <Collapse in={open.includes(id)} timeout="auto" unmountOnExit>
-                <List disablePadding>
-                  <MenuItem level={level + 1} items={children!} />
-                </List>
-              </Collapse>
-            )}
-          </React.Fragment>
-        )
-      })}
-    </>
-  )
-}
-
-export const SidebarMenu = (props: SidebarMenuProps) => {
-  const { items } = props
+  const open = (id: string) => {
+    return opened.some((value) => value === id)
+  }
 
   return (
     <List>
-      <MenuItem items={items} />
+      {routes.map(({ id, title, link, children }) => (
+        <React.Fragment key={id}>
+          <ListItemButton
+            onClick={
+              link
+                ? () => {
+                    push(link)
+                    setOpened([])
+                  }
+                : () => handleOpen(id)
+            }
+            selected={selected(link)}
+          >
+            <ListItemText primary={title} />
+            {children?.length ? (
+              open(id) ? (
+                <ExpandLess />
+              ) : (
+                <ExpandMore />
+              )
+            ) : null}
+          </ListItemButton>
+          {children?.length && (
+            <Collapse in={open(id)} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {children.map(({ id, link, title }) => (
+                  <ListItemButton
+                    selected={selected(link)}
+                    key={id}
+                    sx={{ pl: 4 }}
+                  >
+                    <ListItemText
+                      primary={title}
+                      onClick={() => {
+                        push(link)
+                        setOpened((prevState) => {
+                          const ids: string[] = []
+
+                          routes.forEach((route) => {
+                            if (route.children) {
+                              const found = route.children.find(
+                                (child) => child.id === id,
+                              )
+                              if (found) {
+                                ids.push(route.id)
+                              }
+                            }
+                          })
+
+                          return ids
+                        })
+                      }}
+                    />
+                  </ListItemButton>
+                ))}
+              </List>
+            </Collapse>
+          )}
+        </React.Fragment>
+      ))}
     </List>
   )
 }

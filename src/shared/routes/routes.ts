@@ -9,6 +9,33 @@ export const routes = [
   {
     id: nanoid(),
     title: 'Сотрудники',
-    link: '/employees',
+    children: [
+      {
+        id: nanoid(),
+        title: 'Список',
+        link: '/employees',
+      },
+      {
+        id: nanoid(),
+        title: 'Создать',
+        link: '/employees/create',
+      },
+    ],
+  },
+  {
+    id: nanoid(),
+    title: 'Регионы',
+    children: [
+      {
+        id: nanoid(),
+        title: 'Список',
+        link: '/branches',
+      },
+      {
+        id: nanoid(),
+        title: 'Создать',
+        link: '/branches/create',
+      },
+    ],
   },
 ]

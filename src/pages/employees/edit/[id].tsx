@@ -1,6 +1,11 @@
-import { ReactElement, useState } from 'react'
-import { useRouter } from 'next/router'
+import { ReactElement, useEffect, useState } from 'react'
 
+import { Layout } from '@/shared/layouts/layout'
+import { useRouter } from 'next/router'
+import { EmployeesService } from '@/features/employees'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import { FormInputs } from '../create'
+import dayjs from 'dayjs'
 import {
   Alert,
   Checkbox,
@@ -16,61 +21,41 @@ import {
   Typography,
 } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
-
-import { useSnackbar } from 'notistack'
-
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-
-import { Dayjs } from 'dayjs'
+import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
+import { UploadFile } from '@/features/employees/ui/upload-file/upload-file'
+import { useSnackbar } from 'notistack'
+import { Error } from '@/shared/http'
 import 'dayjs/locale/ru'
 
-import { Controller, SubmitHandler, useForm } from 'react-hook-form'
-
-import { EmployeesService } from '@/features/employees'
-import { UploadFile } from '@/features/employees/ui/upload-file/upload-file'
-import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
-import { Layout } from '@/shared/layouts/layout'
-import { Error } from '@/shared/http'
-
-export interface FormInputs {
-  name: string
-  phone: string
-  birthday: Dayjs | null
-  address: string
-  description: string
-  password: string
-  password_confirmation: string
-  active: boolean
-  branch_id: string
-  orient_id: string
-  manager_id: string
-  roles: string[]
-  avatar: File | null
-}
-
-const initialForm = {
-  active: true,
-  address: '',
-  birthday: null,
-  description: '',
-  name: '',
-  password: '',
-  password_confirmation: '',
-  phone: '',
-  roles: [],
-  branch_id: '',
-  manager_id: '',
-  orient_id: '',
-  avatar: null,
-}
-
-const CreateEmployees = () => {
+const EditEmployees = () => {
   const router = useRouter()
+  const { id } = router.query
   const { enqueueSnackbar } = useSnackbar()
 
+  const [initValues, setInitValues] = useState<FormInputs>()
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      EmployeesService.getEmployee(Number(id)).then(({ data }) => {
+        setInitValues({
+          ...data,
+          address: data.address ? data.address : '',
+          avatar: data.avatar ? new File([], data.avatar) : null,
+          birthday: data.birthday ? dayjs(data.birthday) : null,
+          branch_id: data.branch_id ? String(data.branch_id) : '',
+          description: data.description ? data.description : '',
+          manager_id: data.manager_id ? String(data.manager_id) : '',
+          orient_id: data.manager_id ? String(data.orient_id) : '',
+          password: '',
+          password_confirmation: '',
+          phone: data.phone.slice(3),
+        })
+      })
+    }
+  }, [router])
 
   const {
     reset,
@@ -79,28 +64,51 @@ const CreateEmployees = () => {
     formState: { errors, isSubmitting },
     setError: setFormError,
   } = useForm<FormInputs>({
-    defaultValues: initialForm,
+    defaultValues: {
+      active: true,
+      address: '',
+      avatar: null,
+      birthday: null,
+      branch_id: '',
+      description: '',
+      manager_id: '',
+      name: '',
+      orient_id: '',
+      password: '',
+      password_confirmation: '',
+      phone: '',
+      roles: [],
+    },
+    values: initValues,
   })
 
-  const onSubmit: SubmitHandler<FormInputs> = async (data, event) => {
+  const onSubmit: SubmitHandler<FormInputs> = async (
+    data: FormInputs,
+    event,
+  ) => {
     data.phone = `998${data.phone}`
     const formData = new FormData(event?.target)
+    Object.entries(data).forEach(([key, value]) => {
+      if (!value) {
+        formData.delete(key)
+      }
+    })
     formData.set(
       'birthday',
       data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
     )
     formData.set('phone', data.phone)
     formData.set('active', data.active ? '1' : '0')
+    formData.append('_method', 'PUT')
 
     try {
       setError('')
-      const { data: response } = await EmployeesService.createEmployees(
+      const { data } = await EmployeesService.updateEmployee(
+        Number(id),
         formData,
       )
-
       router.push('/employees')
-      reset()
-      enqueueSnackbar(response.message, {
+      enqueueSnackbar(data.message, {
         variant: 'success',
       })
     } catch (error) {
@@ -133,7 +141,7 @@ const CreateEmployees = () => {
   return (
     <div>
       <Typography variant="h5" mb={3}>
-        Создание сотрудника
+        Редактирование сотрудника
       </Typography>
 
       <Paper elevation={4} className="p-5">
@@ -263,10 +271,6 @@ const CreateEmployees = () => {
                   <Controller
                     name="password"
                     control={control}
-                    rules={{
-                      required: 'Обязательное поле',
-                      minLength: { value: 6, message: 'Минимум 6 символов' },
-                    }}
                     render={({ field }) => (
                       <FormControl fullWidth>
                         <TextField
@@ -290,13 +294,13 @@ const CreateEmployees = () => {
                   <Controller
                     name="password_confirmation"
                     control={control}
-                    rules={{
-                      required: 'Обязательное поле',
-                      validate: (value, values) => {
-                        if (value !== values.password)
-                          return 'Пароли не совпадают'
-                      },
-                    }}
+                    // rules={{
+                    //   required: 'Обязательное поле',
+                    //   validate: (value, values) => {
+                    //     if (value !== values.password)
+                    //       return 'Пароли не совпадают'
+                    //   },
+                    // }}
                     render={({ field }) => (
                       <FormControl fullWidth>
                         <TextField
@@ -397,6 +401,7 @@ const CreateEmployees = () => {
                           label="Роль *"
                           {...field}
                           error={!!errors.roles}
+                          value={field.value || []}
                           onChange={(event) => {
                             const value = event.target.value
                             field.onChange(
@@ -445,7 +450,7 @@ const CreateEmployees = () => {
               type="submit"
               variant="contained"
             >
-              Создать
+              Обновить
             </LoadingButton>
           </div>
         </form>
@@ -454,8 +459,8 @@ const CreateEmployees = () => {
   )
 }
 
-CreateEmployees.getLayout = function getLayout(page: ReactElement) {
+EditEmployees.getLayout = function getLayout(page: ReactElement) {
   return <Layout>{page}</Layout>
 }
 
-export default CreateEmployees
+export default EditEmployees

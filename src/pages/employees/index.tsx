@@ -1,12 +1,11 @@
-import { ReactElement, useCallback, useMemo, useRef, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useRef, useState } from 'react'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
 import {
   Fab,
-  TablePaginationProps,
   Typography,
-  Pagination as MuiPagination,
+  Pagination,
   Alert,
   Button,
   Dialog,
@@ -14,6 +13,21 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableSortLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  TextField,
+  CircularProgress,
+  AlertTitle,
+  IconButton,
 } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import { useSnackbar } from 'notistack'
@@ -22,23 +36,6 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded'
 
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridColDef,
-  GridFilterModel,
-  gridPageSelector,
-  gridPageSizeSelector,
-  GridPagination,
-  gridRowCountSelector,
-  GridRowId,
-  GridSortModel,
-  GridToolbar,
-  ruRU,
-  useGridApiContext,
-  useGridSelector,
-} from '@mui/x-data-grid'
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { EmployeesService } from '@/features/employees'
@@ -46,69 +43,45 @@ import { Employee } from '@/features/employees/types/employee'
 
 import { Layout } from '@/shared/layouts/layout'
 
+import { useDebounce } from '@/shared/hooks'
+
 import {
   Error,
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
 
-const Pagination = ({
-  className,
-}: Pick<TablePaginationProps, 'onPageChange' | 'className'>) => {
-  const apiRef = useGridApiContext()
-  const page = useGridSelector(apiRef, gridPageSelector)
-  const pageCount = useGridSelector(apiRef, gridRowCountSelector)
-  const pageSize = useGridSelector(apiRef, gridPageSizeSelector)
-
-  return (
-    <MuiPagination
-      color="primary"
-      className={className}
-      count={Math.ceil(pageCount / pageSize)}
-      page={page + 1}
-      onChange={(event, value) => {
-        apiRef.current.setPage(value - 1)
-      }}
-    />
-  )
-}
-
-const CustomPagination = (props: any) => {
-  return <GridPagination ActionsComponent={Pagination} {...props} />
-}
+type Order = 'asc' | 'desc'
 
 const Employees = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { enqueueSnackbar } = useSnackbar()
 
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  })
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    {
-      field: '',
-      sort: null,
-    },
-  ])
+  const [page, setPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+
+  const [order, setOrder] = useState<Order>('asc')
+  const [orderBy, setOrderBy] = useState<keyof Employee>('id')
+
   const [searchValue, setSeachValue] = useState<string>('')
+  const debouncedSearch = useDebounce(searchValue)
 
   const [open, setOpen] = useState(false)
-  const deleteId = useRef<GridRowId>()
+  const deleteId = useRef<number>()
 
-  const { data, isFetching, error, isError, refetch } = useQuery<
+  const { data, isLoading, isFetching, error, isError } = useQuery<
     ResponseWithPagination<Employee[]>,
     Error
   >({
-    queryKey: ['employees', paginationModel, sortModel, searchValue],
+    queryKey: ['employees', page, rowsPerPage, order, orderBy, debouncedSearch],
     queryFn: () =>
       EmployeesService.getEmployees(
-        paginationModel.page + 1,
-        paginationModel.pageSize,
-        sortModel[0].sort,
-        sortModel[0].field,
-        searchValue,
+        page,
+        rowsPerPage,
+        order,
+        orderBy,
+        debouncedSearch,
       ),
     onError: (error) => {
       if (error?.status === 401) {
@@ -147,126 +120,189 @@ const Employees = () => {
     setOpen(false)
   }
 
-  const onSortModelChange = (data: GridSortModel) => {
-    if (data.length) setSortModel(data)
-    else setSortModel([{ field: '', sort: null }])
+  const handleChangePage = (
+    event: React.ChangeEvent<unknown>,
+    value: number,
+  ) => {
+    setPage(value)
   }
 
-  const onFilterChange = (data: GridFilterModel) => {
-    setSeachValue(data.quickFilterValues?.join('') || '')
+  const handleChangeRowsPerPage = (event: SelectChangeEvent<string>) => {
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(1)
   }
 
-  const deleteEmployees = useCallback(
-    (id: GridRowId) => () => {
+  const handleRequestSort = (
+    event: React.MouseEvent<unknown>,
+    property: keyof Employee,
+  ) => {
+    const isAsc = orderBy === property && order === 'asc'
+    setOrder(isAsc ? 'desc' : 'asc')
+    setOrderBy(property)
+  }
+
+  const deleteEmployee = useCallback(
+    (id: number) => () => {
       handleClickOpen()
       deleteId.current = id
     },
     [],
   )
 
-  const editEmployees = useCallback((id: GridRowId) => () => {}, [])
+  const editEmployee = useCallback(
+    (id: number) => () => {
+      router.push(`/employees/edit/${id}`)
+    },
+    [],
+  )
 
-  const confirmDeletionEmployees = () => {
+  const confirmDeletionEmployee = () => {
     deleteMutation.mutate(Number(deleteId.current))
   }
 
-  const columns = useMemo<GridColDef[]>(
-    () => [
-      {
-        field: 'id',
-        headerName: 'ID',
-      },
-      {
-        field: 'name',
-        headerName: 'Имя',
-        flex: 1,
-      },
-      {
-        field: 'phone',
-        headerName: 'Телефон',
-        flex: 1,
-      },
-      {
-        field: 'active',
-        type: 'boolean',
-        headerName: 'Активен',
-      },
-      {
-        field: 'actions',
-        type: 'actions',
-        getActions: ({ id }) => [
-          <GridActionsCellItem
-            key={2}
-            icon={<ModeEditOutlineRoundedIcon color="primary" />}
-            label="Редактировать"
-            onClick={deleteEmployees(id)}
-          />,
-          <GridActionsCellItem
-            key={1}
-            icon={<DeleteIcon color="error" />}
-            label="Удалить"
-            onClick={deleteEmployees(id)}
-          />,
-        ],
-      },
-    ],
-    [deleteEmployees, editEmployees],
-  )
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
 
   return (
     <div>
       <Typography variant="h5" mb={3}>
         Сотрудники
       </Typography>
-
-      <div className="h-[640px]">
-        <DataGrid
-          columns={columns}
-          rows={data?.data || []}
-          loading={isFetching}
-          filterMode="server"
-          onFilterModelChange={onFilterChange}
-          sortingMode="server"
-          onSortModelChange={onSortModelChange}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          paginationMode="server"
-          rowCount={data?.pagination.total || 0}
-          pageSizeOptions={[10, 25, 50]}
-          slots={{
-            toolbar: GridToolbar,
-            pagination: CustomPagination,
-            noRowsOverlay: () => (
-              <div className="flex h-full flex-col items-center justify-center">
-                {isError ? (
-                  <>
-                    <Alert variant="filled" severity="error">
-                      {error?.message}
-                    </Alert>
-                    <Button
-                      onClick={() => refetch()}
-                      variant="outlined"
-                      className="mt-4"
-                    >
-                      Загрузить снова
-                    </Button>
-                  </>
-                ) : (
-                  <div>Нет строк</div>
-                )}
-              </div>
-            ),
-          }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
-        />
-      </div>
-
+      <Paper>
+        <div className="p-3">
+          <TextField
+            onChange={(event) => setSeachValue(event.target.value)}
+            value={searchValue}
+            size="small"
+            label="Поиск сотрудника"
+          />
+        </div>
+        <TableContainer sx={{ height: 588, position: 'relative' }}>
+          {isLoading && (
+            <div className="absolute bottom-0 left-0 right-0 top-0 z-10 flex items-center justify-center bg-black/5">
+              <CircularProgress />
+            </div>
+          )}
+          {isError && (
+            <Alert variant="filled" severity="error">
+              <AlertTitle>Ошибка</AlertTitle>
+              {error.message}
+            </Alert>
+          )}
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={(theme) => ({
+                    borderTop: `1px solid ${theme.palette.grey[300]}`,
+                    backgroundColor: theme.palette.grey[100],
+                    width: 100,
+                  })}
+                >
+                  <TableSortLabel
+                    onClick={(event) => handleRequestSort(event, 'id')}
+                    active={orderBy === 'id'}
+                    direction={order}
+                  >
+                    ID
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell
+                  sx={(theme) => ({
+                    borderTop: `1px solid ${theme.palette.grey[300]}`,
+                    backgroundColor: theme.palette.grey[100],
+                  })}
+                >
+                  <TableSortLabel
+                    onClick={(event) => handleRequestSort(event, 'name')}
+                    active={orderBy === 'name'}
+                    direction={order}
+                  >
+                    Имя
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell
+                  sx={(theme) => ({
+                    borderTop: `1px solid ${theme.palette.grey[300]}`,
+                    backgroundColor: theme.palette.grey[100],
+                  })}
+                >
+                  <TableSortLabel
+                    onClick={(event) => handleRequestSort(event, 'phone')}
+                    active={orderBy === 'phone'}
+                    direction={order}
+                  >
+                    Телефон
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell
+                  sx={(theme) => ({
+                    borderTop: `1px solid ${theme.palette.grey[300]}`,
+                    backgroundColor: theme.palette.grey[100],
+                  })}
+                >
+                  <TableSortLabel
+                    onClick={(event) => handleRequestSort(event, 'active')}
+                    active={orderBy === 'active'}
+                    direction={order}
+                  >
+                    Активен
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell
+                  sx={(theme) => ({
+                    borderTop: `1px solid ${theme.palette.grey[300]}`,
+                    backgroundColor: theme.palette.grey[100],
+                    width: 120,
+                  })}
+                ></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data?.data.map(({ active, id, name, phone }) => (
+                <TableRow key={id}>
+                  <TableCell>{id}</TableCell>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>{phone}</TableCell>
+                  <TableCell>{JSON.stringify(active)}</TableCell>
+                  <TableCell padding={'none'} sx={{ px: 2 }} align="right">
+                    <div className="space-x-2">
+                      <IconButton onClick={editEmployee(id)}>
+                        <ModeEditOutlineRoundedIcon />
+                      </IconButton>
+                      <IconButton onClick={deleteEmployee(id)} color="error">
+                        <DeleteIcon />
+                      </IconButton>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <div className="flex items-center justify-end space-x-4 p-3">
+          <div className="flex items-center space-x-2">
+            <div>Строк на странице: </div>
+            <Select
+              value={String(rowsPerPage)}
+              onChange={handleChangeRowsPerPage}
+              size="small"
+            >
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+            </Select>
+          </div>
+          <Pagination
+            size="large"
+            color="primary"
+            count={data?.pagination.last_page}
+            page={page}
+            onChange={handleChangePage}
+          />
+        </div>
+      </Paper>
       <Fab
         component={NextLink}
         href="/employees/create"
@@ -294,7 +330,7 @@ const Employees = () => {
           </Button>
           <LoadingButton
             loading={deleteMutation.isLoading}
-            onClick={confirmDeletionEmployees}
+            onClick={confirmDeletionEmployee}
             variant="contained"
             color="error"
           >
