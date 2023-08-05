@@ -17,6 +17,8 @@ export const UploadFile = ({
     control,
   })
 
+  const defaultPhoto = field.value as File | null
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files) {
       const file = event.currentTarget.files[0]
@@ -41,11 +43,11 @@ export const UploadFile = ({
         onClick={() => fileInput.current?.click()}
         className="h-40 w-40 cursor-pointer rounded-full border border-solid border-gray-200"
       >
-        {previewAvatar || field?.value?.name ? (
+        {previewAvatar || defaultPhoto?.name ? (
           <div className="w-fulls group relative h-full">
             <img
               className="h-full w-full rounded-full object-cover"
-              src={previewAvatar || field.value?.name}
+              src={previewAvatar || defaultPhoto?.name}
               alt="avatar"
             />
 
