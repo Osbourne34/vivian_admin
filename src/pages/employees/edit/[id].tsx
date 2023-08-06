@@ -8,6 +8,7 @@ import { FormInputs } from '../create'
 import dayjs from 'dayjs'
 import {
   Alert,
+  AlertTitle,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -55,10 +56,9 @@ const EditEmployees = () => {
         })
       })
     }
-  }, [router])
+  }, [router, id])
 
   const {
-    reset,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
@@ -88,6 +88,7 @@ const EditEmployees = () => {
   ) => {
     data.phone = `998${data.phone}`
     const formData = new FormData(event?.target)
+
     Object.entries(data).forEach(([key, value]) => {
       if (!value) {
         formData.delete(key)
@@ -107,6 +108,7 @@ const EditEmployees = () => {
         Number(id),
         formData,
       )
+
       router.push('/employees')
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -148,6 +150,7 @@ const EditEmployees = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           {error && (
             <Alert variant="filled" severity="error" className="mb-5">
+              <AlertTitle>Ошибка</AlertTitle>
               {error}
             </Alert>
           )}
@@ -271,6 +274,13 @@ const EditEmployees = () => {
                   <Controller
                     name="password"
                     control={control}
+                    rules={{
+                      validate: (value) => {
+                        if (value) {
+                          if (value.length < 6) return 'Минимум 6 символов'
+                        }
+                      },
+                    }}
                     render={({ field }) => (
                       <FormControl fullWidth>
                         <TextField
@@ -294,13 +304,12 @@ const EditEmployees = () => {
                   <Controller
                     name="password_confirmation"
                     control={control}
-                    // rules={{
-                    //   required: 'Обязательное поле',
-                    //   validate: (value, values) => {
-                    //     if (value !== values.password)
-                    //       return 'Пароли не совпадают'
-                    //   },
-                    // }}
+                    rules={{
+                      validate: (value, values) => {
+                        if (value !== values.password)
+                          return 'Пароли не совпадают'
+                      },
+                    }}
                     render={({ field }) => (
                       <FormControl fullWidth>
                         <TextField
@@ -450,7 +459,7 @@ const EditEmployees = () => {
               type="submit"
               variant="contained"
             >
-              Обновить
+              Сохранить
             </LoadingButton>
           </div>
         </form>

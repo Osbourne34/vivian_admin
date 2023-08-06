@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import { Layout } from '@/shared/layouts/layout'
 import {
   Alert,
@@ -15,14 +15,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useForm, Controller, SubmitHandler } from 'react-hook-form'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { LoadingButton } from '@mui/lab'
+import { useRouter } from 'next/router'
+import { useSnackbar } from 'notistack'
 import { useQuery } from '@tanstack/react-query'
 import { BranchesService } from '@/features/branches'
-import { useSnackbar } from 'notistack'
 
 import { Error } from '@/shared/http'
-import { useRouter } from 'next/router'
 
 type FormInputs = {
   name: string
@@ -30,15 +30,29 @@ type FormInputs = {
   warehouse: boolean
 }
 
-const Create = () => {
+const Edit = () => {
   const router = useRouter()
+  const { id } = router.query
   const { enqueueSnackbar } = useSnackbar()
 
   const { data: branches } = useQuery(['branches'], () =>
     BranchesService.getBranches(),
   )
 
+  const [initValues, setInitValues] = useState<FormInputs>()
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      BranchesService.getBranch(Number(id)).then(({ data }) => {
+        setInitValues({
+          name: data.name,
+          parent_id: data.parent_id === 0 ? '' : String(data.parent_id),
+          warehouse: data.warehouse,
+        })
+      })
+    }
+  }, [router, id])
 
   const {
     reset,
@@ -52,12 +66,16 @@ const Create = () => {
       parent_id: '',
       warehouse: false,
     },
+    values: initValues,
   })
 
   const onSubmit: SubmitHandler<FormInputs> = async (data, event) => {
     try {
       setError('')
-      const { data: response } = await BranchesService.createBranch(data)
+      const { data: response } = await BranchesService.updateBranch(
+        data,
+        Number(id),
+      )
 
       router.push('/branches')
       reset()
@@ -94,7 +112,7 @@ const Create = () => {
   return (
     <div>
       <Typography variant="h5" mb={3}>
-        Создание региона
+        Редактирование региона
       </Typography>
 
       <Paper elevation={4} className="p-5">
@@ -172,7 +190,7 @@ const Create = () => {
               type="submit"
               variant="contained"
             >
-              Создать
+              Сохранить
             </LoadingButton>
           </div>
         </form>
@@ -181,8 +199,8 @@ const Create = () => {
   )
 }
 
-Create.getLayout = function getLayout(page: ReactElement) {
+Edit.getLayout = function getLayout(page: ReactElement) {
   return <Layout>{page}</Layout>
 }
 
-export default Create
+export default Edit

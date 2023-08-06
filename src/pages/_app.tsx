@@ -44,7 +44,7 @@ export default function MyApp(props: AppPropsWithLayout) {
         <CssBaseline />
         <SnackbarProvider
           anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
-          autoHideDuration={5000}
+          autoHideDuration={3000}
         >
           <QueryClientProvider client={queryClient}>
             {getLayout(<Component {...pageProps} />)}

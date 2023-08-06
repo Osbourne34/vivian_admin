@@ -3,7 +3,6 @@ import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 
 import {
-  Fab,
   Typography,
   Pagination,
   Alert,
@@ -28,13 +27,15 @@ import {
   CircularProgress,
   AlertTitle,
   IconButton,
+  Box,
 } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import { useSnackbar } from 'notistack'
 
-import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -161,27 +162,43 @@ const Employees = () => {
   }
 
   useEffect(() => {
-    setPage(1)
+    if (page !== 1) {
+      setPage(1)
+    }
   }, [debouncedSearch])
 
   return (
     <div>
-      <Typography variant="h5" mb={3}>
-        Сотрудники
-      </Typography>
-      <Paper>
-        <div className="p-3">
+      <div className="mb-6 flex items-center justify-between">
+        <Typography variant="h5">Сотрудники</Typography>
+        <Button
+          component={NextLink}
+          href="/employees/create"
+          variant="contained"
+        >
+          Добавить сотрудника
+        </Button>
+      </div>
+      <Paper elevation={4}>
+        <Box
+          className="p-3"
+          sx={(theme) => ({
+            borderBottom: `1px solid ${theme.palette.grey[300]}`,
+          })}
+        >
           <TextField
             onChange={(event) => setSeachValue(event.target.value)}
             value={searchValue}
             size="small"
-            label="Поиск сотрудника"
+            label="Поиск..."
           />
-        </div>
-        <TableContainer sx={{ height: 588, position: 'relative' }}>
-          {isLoading && (
-            <div className="absolute bottom-0 left-0 right-0 top-0 z-10 flex items-center justify-center bg-black/5">
-              <CircularProgress />
+        </Box>
+        <TableContainer className="relative h-[600px]">
+          {isFetching && (
+            <div className="sticky bottom-0 left-0 right-0 top-0 z-10">
+              <div className="absolute flex h-[600px] w-full items-center justify-center bg-black/5">
+                <CircularProgress />
+              </div>
             </div>
           )}
           {isError && (
@@ -193,13 +210,7 @@ const Employees = () => {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell
-                  sx={(theme) => ({
-                    borderTop: `1px solid ${theme.palette.grey[300]}`,
-                    backgroundColor: theme.palette.grey[100],
-                    width: 100,
-                  })}
-                >
+                <TableCell sx={{ width: 100 }}>
                   <TableSortLabel
                     onClick={(event) => handleRequestSort(event, 'id')}
                     active={orderBy === 'id'}
@@ -208,12 +219,7 @@ const Employees = () => {
                     ID
                   </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  sx={(theme) => ({
-                    borderTop: `1px solid ${theme.palette.grey[300]}`,
-                    backgroundColor: theme.palette.grey[100],
-                  })}
-                >
+                <TableCell>
                   <TableSortLabel
                     onClick={(event) => handleRequestSort(event, 'name')}
                     active={orderBy === 'name'}
@@ -222,12 +228,7 @@ const Employees = () => {
                     Имя
                   </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  sx={(theme) => ({
-                    borderTop: `1px solid ${theme.palette.grey[300]}`,
-                    backgroundColor: theme.palette.grey[100],
-                  })}
-                >
+                <TableCell>
                   <TableSortLabel
                     onClick={(event) => handleRequestSort(event, 'phone')}
                     active={orderBy === 'phone'}
@@ -236,12 +237,7 @@ const Employees = () => {
                     Телефон
                   </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  sx={(theme) => ({
-                    borderTop: `1px solid ${theme.palette.grey[300]}`,
-                    backgroundColor: theme.palette.grey[100],
-                  })}
-                >
+                <TableCell>
                   <TableSortLabel
                     onClick={(event) => handleRequestSort(event, 'active')}
                     active={orderBy === 'active'}
@@ -250,13 +246,7 @@ const Employees = () => {
                     Активен
                   </TableSortLabel>
                 </TableCell>
-                <TableCell
-                  sx={(theme) => ({
-                    borderTop: `1px solid ${theme.palette.grey[300]}`,
-                    backgroundColor: theme.palette.grey[100],
-                    width: 120,
-                  })}
-                ></TableCell>
+                <TableCell sx={{ width: 120 }} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -265,7 +255,9 @@ const Employees = () => {
                   <TableCell>{id}</TableCell>
                   <TableCell>{name}</TableCell>
                   <TableCell>{phone}</TableCell>
-                  <TableCell>{JSON.stringify(active)}</TableCell>
+                  <TableCell padding="none" sx={{ px: 2 }}>
+                    {active ? <CheckRoundedIcon /> : <CloseRoundedIcon />}
+                  </TableCell>
                   <TableCell padding={'none'} sx={{ px: 2 }} align="right">
                     <div className="space-x-2">
                       <IconButton onClick={editEmployee(id)}>
@@ -281,7 +273,12 @@ const Employees = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <div className="flex items-center justify-end space-x-4 p-3">
+        <Box
+          className="flex items-center justify-end space-x-4 p-3"
+          sx={(theme) => ({
+            borderTop: `1px solid ${theme.palette.grey[300]}`,
+          })}
+        >
           <div className="flex items-center space-x-2">
             <div>Строк на странице: </div>
             <Select
@@ -301,17 +298,8 @@ const Employees = () => {
             page={page}
             onChange={handleChangePage}
           />
-        </div>
+        </Box>
       </Paper>
-      <Fab
-        component={NextLink}
-        href="/employees/create"
-        color="primary"
-        aria-label="add"
-        className="fixed bottom-6 right-6"
-      >
-        <AddIcon />
-      </Fab>
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Подтвердите действие</DialogTitle>

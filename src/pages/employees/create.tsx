@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 
 import {
   Alert,
+  AlertTitle,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -140,6 +141,7 @@ const CreateEmployees = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           {error && (
             <Alert variant="filled" severity="error" className="mb-5">
+              <AlertTitle>Ошибка</AlertTitle>
               {error}
             </Alert>
           )}
@@ -445,7 +447,7 @@ const CreateEmployees = () => {
               type="submit"
               variant="contained"
             >
-              Создать
+              Создать сотрудника
             </LoadingButton>
           </div>
         </form>
