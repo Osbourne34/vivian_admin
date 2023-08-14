@@ -7,24 +7,16 @@ import {
 import { Branch } from '../types/Branch'
 
 export const BranchesService = {
-  getBranches: async (
-    page: number = 1,
-    perpage: number = 10,
-    orderby: string | null = null,
-    sort: string = '',
-    search: string = '',
-  ) => {
+  getBranches: async (params: {
+    page: number
+    perpage: number
+    orderby: 'asc' | 'desc'
+    sort: string
+    search: string
+  }) => {
     const { data } = await http<ResponseWithPagination<Branch[]>>(
       'api/zones/branches',
-      {
-        params: {
-          page,
-          perpage,
-          sort,
-          orderby,
-          search,
-        },
-      },
+      { params },
     )
 
     return data
@@ -38,23 +30,35 @@ export const BranchesService = {
     return data
   },
 
-  createBranch: (body: {
+  createBranch: async (body: {
     name: string
     parent_id: string
     warehouse: boolean
   }) => {
-    return http.post<ResponseWithMessage>('/api/zones/branches', body)
+    const { data } = await http.post<ResponseWithMessage>(
+      '/api/zones/branches',
+      body,
+    )
+
+    return data
   },
 
-  updateBranch: (
+  updateBranch: async ({
+    body,
+    id,
+  }: {
     body: {
       name: string
       parent_id: string
       warehouse: boolean
-    },
-    id: number,
-  ) => {
-    return http.put<ResponseWithMessage>(`/api/zones/branches/${id}`, body)
+    }
+    id: number
+  }) => {
+    const { data } = await http.put<ResponseWithMessage>(
+      `/api/zones/branches/${id}`,
+      body,
+    )
+    return data
   },
 
   deleteBranch: async (id: number) => {

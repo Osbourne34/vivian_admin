@@ -27,11 +27,14 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
 import { UploadFile } from '@/features/employees/ui/upload-file/upload-file'
 import { useSnackbar } from 'notistack'
-import { Error } from '@/shared/http'
+import { Error, ResponseWithMessage } from '@/shared/http'
 import 'dayjs/locale/ru'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { BranchesService } from '@/features/branches'
 
 const EditEmployees = () => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { id } = router.query
   const { enqueueSnackbar } = useSnackbar()
 
@@ -59,9 +62,10 @@ const EditEmployees = () => {
   }, [router, id])
 
   const {
+    reset,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setError: setFormError,
   } = useForm<FormInputs>({
     defaultValues: {
@@ -82,40 +86,21 @@ const EditEmployees = () => {
     values: initValues,
   })
 
-  const onSubmit: SubmitHandler<FormInputs> = async (
-    data: FormInputs,
-    event,
-  ) => {
-    data.phone = `998${data.phone}`
-    const formData = new FormData(event?.target)
-
-    Object.entries(data).forEach(([key, value]) => {
-      if (!value) {
-        formData.delete(key)
-      }
-    })
-    formData.set(
-      'birthday',
-      data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
-    )
-    formData.set('phone', data.phone)
-    formData.set('active', data.active ? '1' : '0')
-    formData.append('_method', 'PUT')
-
-    try {
-      setError('')
-      const { data } = await EmployeesService.updateEmployee(
-        Number(id),
-        formData,
-      )
-
+  const updateMutation = useMutation<
+    ResponseWithMessage,
+    Error,
+    { id: number; body: FormData }
+  >({
+    mutationFn: EmployeesService.updateEmployee,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['employees'])
       router.push('/employees')
+      reset()
       enqueueSnackbar(data.message, {
         variant: 'success',
       })
-    } catch (error) {
-      const err = error as Error
-
+    },
+    onError: (err) => {
       if (err.status === 401) {
         router.push('/login')
         return
@@ -137,8 +122,44 @@ const EditEmployees = () => {
       }
 
       setError(err?.message!)
-    }
+    },
+  })
+
+  const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs, event) => {
+    data.phone = `998${data.phone}`
+    const formData = new FormData(event?.target)
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (!value) {
+        formData.delete(key)
+      }
+    })
+    formData.set(
+      'birthday',
+      data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
+    )
+    formData.set('phone', data.phone)
+    formData.set('active', data.active ? '1' : '0')
+    formData.append('_method', 'PUT')
+
+    setError('')
+    updateMutation.mutate({ id: Number(id), body: formData })
   }
+
+  const { data: branches } = useQuery(['branches'], () =>
+    //@ts-ignore
+    BranchesService.getBranches(),
+  )
+
+  const { data: roles } = useQuery(['roles'], () => EmployeesService.getRoles())
+
+  const { data: orients } = useQuery(['orients'], () =>
+    EmployeesService.getOrients(),
+  )
+
+  const { data: managers } = useQuery(['managers'], () =>
+    EmployeesService.getManagers(),
+  )
 
   return (
     <div>
@@ -345,9 +366,11 @@ const EditEmployees = () => {
                             field.onChange(event.target.value)
                           }
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          {branches?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={id}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -367,9 +390,11 @@ const EditEmployees = () => {
                             field.onChange(event.target.value)
                           }
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          {orients?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={id}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -389,9 +414,11 @@ const EditEmployees = () => {
                             field.onChange(event.target.value)
                           }
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          {managers?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={id}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -420,8 +447,11 @@ const EditEmployees = () => {
                             )
                           }}
                         >
-                          <MenuItem value={'admin'}>Ten</MenuItem>
-                          <MenuItem value={'manager'}>Twenty</MenuItem>
+                          {roles?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={name}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -455,7 +485,7 @@ const EditEmployees = () => {
 
           <div className="mt-5 flex justify-end space-x-4">
             <LoadingButton
-              loading={isSubmitting}
+              loading={updateMutation.isLoading}
               type="submit"
               variant="contained"
             >

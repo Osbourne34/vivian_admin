@@ -17,11 +17,11 @@ import {
 } from '@mui/material'
 import { useForm, Controller, SubmitHandler } from 'react-hook-form'
 import { LoadingButton } from '@mui/lab'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BranchesService } from '@/features/branches'
 import { useSnackbar } from 'notistack'
 
-import { Error } from '@/shared/http'
+import { Error, ResponseWithMessage } from '@/shared/http'
 import { useRouter } from 'next/router'
 
 type FormInputs = {
@@ -32,41 +32,35 @@ type FormInputs = {
 
 const Create = () => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { enqueueSnackbar } = useSnackbar()
 
   const { data: branches } = useQuery(['branches'], () =>
+    //@ts-ignore
     BranchesService.getBranches(),
   )
 
   const [error, setError] = useState('')
 
-  const {
-    reset,
-    control,
-    formState: { errors, isSubmitting },
-    handleSubmit,
-    setError: setFormError,
-  } = useForm<FormInputs>({
-    defaultValues: {
-      name: '',
-      parent_id: '',
-      warehouse: false,
-    },
-  })
-
-  const onSubmit: SubmitHandler<FormInputs> = async (data, event) => {
-    try {
-      setError('')
-      const { data: response } = await BranchesService.createBranch(data)
-
+  const createMutation = useMutation<
+    ResponseWithMessage,
+    Error,
+    {
+      name: string
+      parent_id: string
+      warehouse: boolean
+    }
+  >({
+    mutationFn: BranchesService.createBranch,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['branches'])
       router.push('/branches')
       reset()
-      enqueueSnackbar(response.message, {
+      enqueueSnackbar(data.message, {
         variant: 'success',
       })
-    } catch (error) {
-      const err = error as Error
-
+    },
+    onError: (err) => {
       if (err.status === 401) {
         router.push('/login')
         return
@@ -88,7 +82,26 @@ const Create = () => {
       }
 
       setError(err?.message!)
-    }
+    },
+  })
+
+  const {
+    reset,
+    control,
+    formState: { errors },
+    handleSubmit,
+    setError: setFormError,
+  } = useForm<FormInputs>({
+    defaultValues: {
+      name: '',
+      parent_id: '',
+      warehouse: false,
+    },
+  })
+
+  const onSubmit: SubmitHandler<FormInputs> = (data) => {
+    setError('')
+    createMutation.mutate(data)
   }
 
   return (
@@ -168,7 +181,7 @@ const Create = () => {
 
           <div className="mt-5 flex items-center justify-end">
             <LoadingButton
-              loading={isSubmitting}
+              loading={createMutation.isLoading}
               type="submit"
               variant="contained"
             >

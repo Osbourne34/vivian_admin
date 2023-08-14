@@ -33,7 +33,9 @@ import { EmployeesService } from '@/features/employees'
 import { UploadFile } from '@/features/employees/ui/upload-file/upload-file'
 import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
 import { Layout } from '@/shared/layouts/layout'
-import { Error } from '@/shared/http'
+import { Error, ResponseWithMessage } from '@/shared/http'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { BranchesService } from '@/features/branches'
 
 export interface FormInputs {
   name: string
@@ -69,44 +71,22 @@ const initialForm = {
 
 const CreateEmployees = () => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { enqueueSnackbar } = useSnackbar()
 
   const [error, setError] = useState('')
 
-  const {
-    reset,
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
-    setError: setFormError,
-  } = useForm<FormInputs>({
-    defaultValues: initialForm,
-  })
-
-  const onSubmit: SubmitHandler<FormInputs> = async (data, event) => {
-    data.phone = `998${data.phone}`
-    const formData = new FormData(event?.target)
-    formData.set(
-      'birthday',
-      data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
-    )
-    formData.set('phone', data.phone)
-    formData.set('active', data.active ? '1' : '0')
-
-    try {
-      setError('')
-      const { data: response } = await EmployeesService.createEmployees(
-        formData,
-      )
-
+  const createMutation = useMutation<ResponseWithMessage, Error, FormData>({
+    mutationFn: EmployeesService.createEmployee,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['employees'])
       router.push('/employees')
       reset()
-      enqueueSnackbar(response.message, {
+      enqueueSnackbar(data.message, {
         variant: 'success',
       })
-    } catch (error) {
-      const err = error as Error
-
+    },
+    onError: (err) => {
       if (err.status === 401) {
         router.push('/login')
         return
@@ -128,8 +108,47 @@ const CreateEmployees = () => {
       }
 
       setError(err?.message!)
-    }
+    },
+  })
+
+  const {
+    reset,
+    handleSubmit,
+    control,
+    formState: { errors },
+    setError: setFormError,
+  } = useForm<FormInputs>({
+    defaultValues: initialForm,
+  })
+
+  const onSubmit: SubmitHandler<FormInputs> = (data, event) => {
+    data.phone = `998${data.phone}`
+    const formData = new FormData(event?.target)
+    formData.set(
+      'birthday',
+      data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
+    )
+    formData.set('phone', data.phone)
+    formData.set('active', data.active ? '1' : '0')
+
+    setError('')
+    createMutation.mutate(formData)
   }
+
+  const { data: branches } = useQuery(['branches'], () =>
+    //@ts-ignore
+    BranchesService.getBranches(),
+  )
+
+  const { data: roles } = useQuery(['roles'], () => EmployeesService.getRoles())
+
+  const { data: orients } = useQuery(['orients'], () =>
+    EmployeesService.getOrients(),
+  )
+
+  const { data: managers } = useQuery(['managers'], () =>
+    EmployeesService.getManagers(),
+  )
 
   return (
     <div>
@@ -334,9 +353,11 @@ const CreateEmployees = () => {
                             field.onChange(event.target.value)
                           }
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          {branches?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={id}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -356,9 +377,11 @@ const CreateEmployees = () => {
                             field.onChange(event.target.value)
                           }
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          {orients?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={id}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -378,9 +401,11 @@ const CreateEmployees = () => {
                             field.onChange(event.target.value)
                           }
                         >
-                          <MenuItem value={10}>Ten</MenuItem>
-                          <MenuItem value={20}>Twenty</MenuItem>
-                          <MenuItem value={30}>Thirty</MenuItem>
+                          {managers?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={id}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -408,8 +433,11 @@ const CreateEmployees = () => {
                             )
                           }}
                         >
-                          <MenuItem value={'admin'}>Ten</MenuItem>
-                          <MenuItem value={'manager'}>Twenty</MenuItem>
+                          {roles?.data.map(({ id, name }) => (
+                            <MenuItem key={id} value={name}>
+                              {name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
@@ -443,7 +471,7 @@ const CreateEmployees = () => {
 
           <div className="mt-5 flex justify-end space-x-4">
             <LoadingButton
-              loading={isSubmitting}
+              loading={createMutation.isLoading}
               type="submit"
               variant="contained"
             >

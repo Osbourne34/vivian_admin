@@ -85,13 +85,13 @@ const Branches = () => {
   >({
     queryKey: ['branches', page, rowsPerPage, order, orderBy, debouncedSearch],
     queryFn: () =>
-      BranchesService.getBranches(
+      BranchesService.getBranches({
         page,
-        rowsPerPage,
-        order,
-        orderBy,
-        debouncedSearch,
-      ),
+        perpage: rowsPerPage,
+        orderby: order,
+        sort: orderBy,
+        search: debouncedSearch,
+      }),
     onError: (error) => {
       if (error?.status === 401) {
         router.push('/login')
@@ -391,7 +391,7 @@ const Branches = () => {
         <DialogTitle>Подтвердите действие</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Вы действительно хотите удалить этого сотрудника?
+            Вы действительно хотите удалить этот регион?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

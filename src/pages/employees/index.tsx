@@ -28,6 +28,9 @@ import {
   AlertTitle,
   IconButton,
   Box,
+  Grid,
+  InputLabel,
+  FormControl,
 } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import { useSnackbar } from 'notistack'
@@ -51,6 +54,7 @@ import {
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
+import { BranchesService } from '@/features/branches'
 
 type Order = 'asc' | 'desc'
 
@@ -68,6 +72,13 @@ const Employees = () => {
   const [searchValue, setSeachValue] = useState<string>('')
   const debouncedSearch = useDebounce(searchValue)
 
+  const [branch, setBranch] = useState('')
+  const [verify, setVerify] = useState('')
+  const [status, setStatus] = useState('')
+  const [role, setRole] = useState('')
+  const [orient, setOrient] = useState('')
+  const [manager, setManager] = useState('')
+
   const [open, setOpen] = useState(false)
   const deleteId = useRef<number>()
 
@@ -75,15 +86,34 @@ const Employees = () => {
     ResponseWithPagination<Employee[]>,
     Error
   >({
-    queryKey: ['employees', page, rowsPerPage, order, orderBy, debouncedSearch],
+    queryKey: [
+      'employees',
+      page,
+      rowsPerPage,
+      order,
+      orderBy,
+      debouncedSearch,
+      branch,
+      verify,
+      status,
+      role,
+      orient,
+      manager,
+    ],
     queryFn: () =>
-      EmployeesService.getEmployees(
+      EmployeesService.getEmployees({
         page,
-        rowsPerPage,
+        perpage: rowsPerPage,
         order,
-        orderBy,
-        debouncedSearch,
-      ),
+        sort: orderBy,
+        search: debouncedSearch,
+        branch_id: branch ? branch : null,
+        sortbyactivity: verify,
+        sortbyverified: status,
+        role,
+        orient_id: orient ? orient : null,
+        manager_id: manager ? manager : null,
+      }),
     onError: (error) => {
       if (error?.status === 401) {
         router.push('/login')
@@ -112,6 +142,20 @@ const Employees = () => {
       }
     },
   })
+
+  const { data: branches } = useQuery(['branches'], () =>
+    BranchesService.getBranches(),
+  )
+
+  const { data: roles } = useQuery(['roles'], () => EmployeesService.getRoles())
+
+  const { data: orients } = useQuery(['orients'], () =>
+    EmployeesService.getOrients(),
+  )
+
+  const { data: managers } = useQuery(['managers'], () =>
+    EmployeesService.getManagers(),
+  )
 
   const handleClickOpen = () => {
     setOpen(true)
@@ -186,12 +230,126 @@ const Employees = () => {
             borderBottom: `1px solid ${theme.palette.grey[300]}`,
           })}
         >
-          <TextField
-            onChange={(event) => setSeachValue(event.target.value)}
-            value={searchValue}
-            size="small"
-            label="Поиск..."
-          />
+          <Grid container spacing={2}>
+            <Grid xs={3} item>
+              <TextField
+                onChange={(event) => setSeachValue(event.target.value)}
+                value={searchValue}
+                size="small"
+                label="Поиск..."
+                fullWidth
+              />
+            </Grid>
+            <Grid xs={3} item>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Регион</InputLabel>
+                <Select
+                  value={branch}
+                  onChange={(event) => {
+                    setBranch(event.target.value)
+                  }}
+                  label="Регион"
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {branches?.data.map(({ id, name, childrens }) => (
+                    <MenuItem key={id} value={id}>
+                      {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid xs={3} item>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Верификация</InputLabel>
+                <Select
+                  value={verify}
+                  onChange={(event) => {
+                    setVerify(event.target.value)
+                  }}
+                  label="Верификация"
+                >
+                  <MenuItem value={''}>Все</MenuItem>
+                  <MenuItem value={'verifieds'}>Верифицированные</MenuItem>
+                  <MenuItem value={'unverifieds'}>Неверифицированные</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid xs={3} item>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Статус</InputLabel>
+                <Select
+                  value={status}
+                  onChange={(event) => {
+                    setStatus(event.target.value)
+                  }}
+                  label="Статус"
+                >
+                  <MenuItem value={''}>Все</MenuItem>
+                  <MenuItem value={'active'}>Активные</MenuItem>
+                  <MenuItem value={'disactive'}>Неактивные</MenuItem>
+                  <MenuItem value={'trasheds'}>Удаленные</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid xs={3} item>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Роль</InputLabel>
+                <Select
+                  value={role}
+                  onChange={(event) => {
+                    setRole(event.target.value)
+                  }}
+                  label="Роль"
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {roles?.data.map(({ id, name }) => (
+                    <MenuItem key={id} value={name}>
+                      {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid xs={3} item>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Ориентир</InputLabel>
+                <Select
+                  value={orient}
+                  onChange={(event) => {
+                    setOrient(event.target.value)
+                  }}
+                  label="Ориентир"
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {orients?.data.map(({ id, name }) => (
+                    <MenuItem key={id} value={id}>
+                      {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid xs={3} item>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Менеджер</InputLabel>
+                <Select
+                  value={manager}
+                  onChange={(event) => {
+                    setManager(event.target.value)
+                  }}
+                  label="Менеджер"
+                >
+                  <MenuItem value="">Все</MenuItem>
+                  {managers?.data.map(({ id, name }) => (
+                    <MenuItem key={id} value={id}>
+                      {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
         </Box>
         <TableContainer className="relative h-[600px]">
           {isFetching && (

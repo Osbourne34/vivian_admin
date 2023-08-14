@@ -7,32 +7,36 @@ import {
 import { Employee } from '../types/employee'
 
 export const EmployeesService = {
-  createEmployees: (body: FormData) => {
-    return http.post<ResponseWithMessage>('/api/user/users', body, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  },
-
-  getEmployees: async (
-    page: number = 1,
-    perpage: number = 10,
-    orderby: string | null = null,
-    sort: string = '',
-    search: string = '',
-  ) => {
-    const { data } = await http<ResponseWithPagination<Employee[]>>(
-      'api/user/users',
+  createEmployee: async (body: FormData) => {
+    const { data } = await http.post<ResponseWithMessage>(
+      '/api/user/users',
+      body,
       {
-        params: {
-          page,
-          perpage,
-          sort,
-          orderby,
-          search,
+        headers: {
+          'Content-Type': 'multipart/form-data',
         },
       },
+    )
+
+    return data
+  },
+
+  getEmployees: async (params: {
+    page: number
+    perpage: number
+    order: 'asc' | 'desc'
+    sort: string
+    search: string
+    branch_id: string | null
+    sortbyverified: string
+    sortbyactivity: string
+    role: string
+    orient_id: string | null
+    manager_id: string | null
+  }) => {
+    const { data } = await http<ResponseWithPagination<Employee[]>>(
+      'api/user/users',
+      { params },
     )
     return data
   },
@@ -57,18 +61,48 @@ export const EmployeesService = {
     return data
   },
 
-  updateEmployee: async (id: number, body: FormData) => {
-    return http.post(`api/user/users/${id}`, body, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+  updateEmployee: async ({ id, body }: { id: number; body: FormData }) => {
+    const { data } = await http.post<ResponseWithMessage>(
+      `api/user/users/${id}`,
+      body,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       },
-    })
+    )
+
+    return data
   },
 
   deleteEmployees: async (id: number) => {
     const { data } = await http.delete<ResponseWithMessage>(
       `api/user/users/${id}`,
     )
+
+    return data
+  },
+
+  getRoles: async () => {
+    const { data } = await http<
+      ResponseWithData<{ id: number; name: string }[]>
+    >('api/filter/roles')
+
+    return data
+  },
+
+  getOrients: async () => {
+    const { data } = await http<
+      ResponseWithData<{ id: number; name: string }[]>
+    >('api/filter/orients')
+
+    return data
+  },
+
+  getManagers: async () => {
+    const { data } = await http<
+      ResponseWithData<{ id: number; name: string }[]>
+    >('/api/filter/managers')
 
     return data
   },
