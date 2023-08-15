@@ -24,7 +24,7 @@ export const EmployeesService = {
   getEmployees: async (params: {
     page: number
     perpage: number
-    order: 'asc' | 'desc'
+    orderby: 'asc' | 'desc'
     sort: string
     search: string
     branch_id: string | null

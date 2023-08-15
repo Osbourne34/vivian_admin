@@ -104,7 +104,7 @@ const Employees = () => {
       EmployeesService.getEmployees({
         page,
         perpage: rowsPerPage,
-        order,
+        orderby: order,
         sort: orderBy,
         search: debouncedSearch,
         branch_id: branch ? branch : null,
