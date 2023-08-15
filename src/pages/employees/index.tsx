@@ -144,6 +144,7 @@ const Employees = () => {
   })
 
   const { data: branches } = useQuery(['branches'], () =>
+    //@ts-ignore
     BranchesService.getBranches(),
   )
 
