@@ -35,7 +35,6 @@ import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
 import { Layout } from '@/shared/layouts/layout'
 import { Error, ResponseWithMessage } from '@/shared/http'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BranchesService } from '@/features/branches'
 
 export interface FormInputs {
   name: string
@@ -47,8 +46,6 @@ export interface FormInputs {
   password_confirmation: string
   active: boolean
   branch_id: string
-  orient_id: string
-  manager_id: string
   roles: string[]
   avatar: File | null
 }
@@ -64,8 +61,6 @@ const initialForm = {
   phone: '',
   roles: [],
   branch_id: '',
-  manager_id: '',
-  orient_id: '',
   avatar: null,
 }
 
@@ -136,19 +131,10 @@ const CreateEmployees = () => {
   }
 
   const { data: branches } = useQuery(['branches'], () =>
-    //@ts-ignore
-    BranchesService.getBranches(),
+    EmployeesService.getBranches(),
   )
 
   const { data: roles } = useQuery(['roles'], () => EmployeesService.getRoles())
-
-  const { data: orients } = useQuery(['orients'], () =>
-    EmployeesService.getOrients(),
-  )
-
-  const { data: managers } = useQuery(['managers'], () =>
-    EmployeesService.getManagers(),
-  )
 
   return (
     <div>
@@ -364,55 +350,7 @@ const CreateEmployees = () => {
                   </FormControl>
                 </Grid>
                 <Grid xs={6} item>
-                  <FormControl fullWidth>
-                    <InputLabel>Ориентир</InputLabel>
-                    <Controller
-                      name="orient_id"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          label="Ориентир"
-                          {...field}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
-                        >
-                          {orients?.data.map(({ id, name }) => (
-                            <MenuItem key={id} value={id}>
-                              {name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid xs={6} item>
-                  <FormControl fullWidth>
-                    <InputLabel>Менеджер</InputLabel>
-                    <Controller
-                      name="manager_id"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          label="Менеджер"
-                          {...field}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
-                        >
-                          {managers?.data.map(({ id, name }) => (
-                            <MenuItem key={id} value={id}>
-                              {name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid xs={6} item>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth error={!!errors.roles}>
                     <InputLabel>Роль *</InputLabel>
                     <Controller
                       name="roles"
@@ -423,7 +361,6 @@ const CreateEmployees = () => {
                           multiple
                           label="Роль *"
                           {...field}
-                          error={!!errors.roles}
                           onChange={(event) => {
                             const value = event.target.value
                             field.onChange(

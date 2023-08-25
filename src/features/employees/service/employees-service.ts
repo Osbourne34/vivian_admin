@@ -8,15 +8,11 @@ import { Employee } from '../types/employee'
 
 export const EmployeesService = {
   createEmployee: async (body: FormData) => {
-    const { data } = await http.post<ResponseWithMessage>(
-      '/api/user/users',
-      body,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+    const { data } = await http.post<ResponseWithMessage>('/api/users', body, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
       },
-    )
+    })
 
     return data
   },
@@ -31,11 +27,9 @@ export const EmployeesService = {
     sortbyverified: string
     sortbyactivity: string
     role: string
-    orient_id: string | null
-    manager_id: string | null
   }) => {
     const { data } = await http<ResponseWithPagination<Employee[]>>(
-      'api/user/users',
+      'api/users',
       { params },
     )
     return data
@@ -45,8 +39,6 @@ export const EmployeesService = {
     const { data } = await http<
       ResponseWithData<{
         branch_id: null | number
-        orient_id: null | number
-        manager_id: null | number
         name: string
         phone: string
         birthday: string | null
@@ -56,14 +48,14 @@ export const EmployeesService = {
         roles: string[]
         active: boolean
       }>
-    >(`api/user/users/${id}/edit`)
+    >(`api/users/${id}/edit`)
 
     return data
   },
 
   updateEmployee: async ({ id, body }: { id: number; body: FormData }) => {
     const { data } = await http.post<ResponseWithMessage>(
-      `api/user/users/${id}`,
+      `api/users/${id}`,
       body,
       {
         headers: {
@@ -75,10 +67,20 @@ export const EmployeesService = {
     return data
   },
 
-  deleteEmployees: async (id: number) => {
-    const { data } = await http.delete<ResponseWithMessage>(
-      `api/user/users/${id}`,
-    )
+  deleteEmployee: async (id: number) => {
+    const { data } = await http.delete<ResponseWithMessage>(`api/users/${id}`)
+
+    return data
+  },
+
+  getBranches: async () => {
+    const { data } = await http<
+      ResponseWithData<{ id: number; name: string }[]>
+    >(`api/filter/branches`, {
+      params: {
+        tree: 0,
+      },
+    })
 
     return data
   },

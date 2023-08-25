@@ -1,0 +1,59 @@
+import {
+  ResponseWithData,
+  ResponseWithMessage,
+  ResponseWithPagination,
+  http,
+} from '@/shared/http'
+import { Orient } from '../types/Orient'
+
+export const OrientsService = {
+  getOrients: async (params: {
+    page: number
+    search: string
+    perpage: number
+    sort: string
+    orderby: string
+    branch_id: string | null
+  }) => {
+    const { data } = await http<ResponseWithPagination<Orient[]>>(
+      `api/orients`,
+      {
+        params,
+      },
+    )
+
+    return data
+  },
+
+  getOrient: async (id: number) => {
+    const { data } = await http<ResponseWithData<Orient>>(
+      `api/orients/${id}/edit`,
+    )
+
+    return data
+  },
+
+  createOrient: async (body: { name: string; branch_id: string }) => {
+    const { data } = await http.post<ResponseWithMessage>(`api/orients`, body)
+
+    return data
+  },
+
+  updateOrient: async (
+    id: number,
+    body: { name: string; branch_id: number },
+  ) => {
+    const { data } = await http.put<ResponseWithMessage>(
+      `api/orients/${id}`,
+      body,
+    )
+
+    return data
+  },
+
+  deleteOrient: async (id: number) => {
+    const { data } = await http.delete<ResponseWithMessage>(`api/orients/${id}`)
+
+    return data
+  },
+}

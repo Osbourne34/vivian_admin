@@ -30,7 +30,6 @@ import { useSnackbar } from 'notistack'
 import { Error, ResponseWithMessage } from '@/shared/http'
 import 'dayjs/locale/ru'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BranchesService } from '@/features/branches'
 
 const EditEmployees = () => {
   const router = useRouter()
@@ -51,8 +50,6 @@ const EditEmployees = () => {
           birthday: data.birthday ? dayjs(data.birthday) : null,
           branch_id: data.branch_id ? String(data.branch_id) : '',
           description: data.description ? data.description : '',
-          manager_id: data.manager_id ? String(data.manager_id) : '',
-          orient_id: data.manager_id ? String(data.orient_id) : '',
           password: '',
           password_confirmation: '',
           phone: data.phone.slice(3),
@@ -75,9 +72,7 @@ const EditEmployees = () => {
       birthday: null,
       branch_id: '',
       description: '',
-      manager_id: '',
       name: '',
-      orient_id: '',
       password: '',
       password_confirmation: '',
       phone: '',
@@ -147,19 +142,10 @@ const EditEmployees = () => {
   }
 
   const { data: branches } = useQuery(['branches'], () =>
-    //@ts-ignore
-    BranchesService.getBranches(),
+    EmployeesService.getBranches(),
   )
 
   const { data: roles } = useQuery(['roles'], () => EmployeesService.getRoles())
-
-  const { data: orients } = useQuery(['orients'], () =>
-    EmployeesService.getOrients(),
-  )
-
-  const { data: managers } = useQuery(['managers'], () =>
-    EmployeesService.getManagers(),
-  )
 
   return (
     <div>
@@ -367,54 +353,6 @@ const EditEmployees = () => {
                           }
                         >
                           {branches?.data.map(({ id, name }) => (
-                            <MenuItem key={id} value={id}>
-                              {name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid xs={6} item>
-                  <FormControl fullWidth>
-                    <InputLabel>Ориентир</InputLabel>
-                    <Controller
-                      name="orient_id"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          label="Ориентир"
-                          {...field}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
-                        >
-                          {orients?.data.map(({ id, name }) => (
-                            <MenuItem key={id} value={id}>
-                              {name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
-                </Grid>
-                <Grid xs={6} item>
-                  <FormControl fullWidth>
-                    <InputLabel>Менеджер</InputLabel>
-                    <Controller
-                      name="manager_id"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          label="Менеджер"
-                          {...field}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
-                        >
-                          {managers?.data.map(({ id, name }) => (
                             <MenuItem key={id} value={id}>
                               {name}
                             </MenuItem>

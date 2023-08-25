@@ -15,7 +15,7 @@ export const BranchesService = {
     search: string
   }) => {
     const { data } = await http<ResponseWithPagination<Branch[]>>(
-      'api/zones/branches',
+      'api/branches',
       { params },
     )
 
@@ -24,7 +24,7 @@ export const BranchesService = {
 
   getBranch: async (id: number) => {
     const { data } = await http<ResponseWithData<Branch>>(
-      `api/zones/branches/${id}/edit`,
+      `api/branches/${id}/edit`,
     )
 
     return data
@@ -35,10 +35,7 @@ export const BranchesService = {
     parent_id: string
     warehouse: boolean
   }) => {
-    const { data } = await http.post<ResponseWithMessage>(
-      '/api/zones/branches',
-      body,
-    )
+    const { data } = await http.post<ResponseWithMessage>('/api/branches', body)
 
     return data
   },
@@ -55,7 +52,7 @@ export const BranchesService = {
     id: number
   }) => {
     const { data } = await http.put<ResponseWithMessage>(
-      `/api/zones/branches/${id}`,
+      `/api/branches/${id}`,
       body,
     )
     return data
@@ -63,7 +60,7 @@ export const BranchesService = {
 
   deleteBranch: async (id: number) => {
     const { data } = await http.delete<ResponseWithMessage>(
-      `api/zones/branches/${id}`,
+      `api/branches/${id}`,
     )
 
     return data

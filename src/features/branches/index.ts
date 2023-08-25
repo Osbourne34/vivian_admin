@@ -1,1 +1,1 @@
-export * from './service/branchesService'
+export * from './service/branches-service'

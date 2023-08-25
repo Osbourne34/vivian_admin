@@ -76,16 +76,17 @@ const Employees = () => {
   const [verify, setVerify] = useState('')
   const [status, setStatus] = useState('')
   const [role, setRole] = useState('')
-  const [orient, setOrient] = useState('')
-  const [manager, setManager] = useState('')
 
   const [open, setOpen] = useState(false)
   const deleteId = useRef<number>()
 
-  const { data, isLoading, isFetching, error, isError } = useQuery<
-    ResponseWithPagination<Employee[]>,
-    Error
-  >({
+  const {
+    data: employees,
+    isLoading,
+    isFetching,
+    error,
+    isError,
+  } = useQuery<ResponseWithPagination<Employee[]>, Error>({
     queryKey: [
       'employees',
       page,
@@ -97,8 +98,6 @@ const Employees = () => {
       verify,
       status,
       role,
-      orient,
-      manager,
     ],
     queryFn: () =>
       EmployeesService.getEmployees({
@@ -108,11 +107,9 @@ const Employees = () => {
         sort: orderBy,
         search: debouncedSearch,
         branch_id: branch ? branch : null,
-        sortbyactivity: verify,
-        sortbyverified: status,
+        sortbyactivity: status,
+        sortbyverified: verify,
         role,
-        orient_id: orient ? orient : null,
-        manager_id: manager ? manager : null,
       }),
     onError: (error) => {
       if (error?.status === 401) {
@@ -122,9 +119,10 @@ const Employees = () => {
     retry: 0,
     keepPreviousData: true,
     staleTime: 20000,
+    refetchOnWindowFocus: false,
   })
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
-    mutationFn: EmployeesService.deleteEmployees,
+    mutationFn: EmployeesService.deleteEmployee,
     onSuccess: (data) => {
       queryClient.invalidateQueries(['employees'])
       handleClose()
@@ -143,19 +141,20 @@ const Employees = () => {
     },
   })
 
-  const { data: branches } = useQuery(['branches'], () =>
-    //@ts-ignore
-    BranchesService.getBranches(),
+  const { data: branches } = useQuery(
+    ['branches'],
+    () => EmployeesService.getBranches(),
+    {
+      refetchOnWindowFocus: false,
+    },
   )
 
-  const { data: roles } = useQuery(['roles'], () => EmployeesService.getRoles())
-
-  const { data: orients } = useQuery(['orients'], () =>
-    EmployeesService.getOrients(),
-  )
-
-  const { data: managers } = useQuery(['managers'], () =>
-    EmployeesService.getManagers(),
+  const { data: roles } = useQuery(
+    ['roles'],
+    () => EmployeesService.getRoles(),
+    {
+      refetchOnWindowFocus: false,
+    },
   )
 
   const handleClickOpen = () => {
@@ -232,7 +231,7 @@ const Employees = () => {
           })}
         >
           <Grid container spacing={2}>
-            <Grid xs={3} item>
+            <Grid xs={4} item>
               <TextField
                 onChange={(event) => setSeachValue(event.target.value)}
                 value={searchValue}
@@ -241,7 +240,7 @@ const Employees = () => {
                 fullWidth
               />
             </Grid>
-            <Grid xs={3} item>
+            <Grid xs={4} item>
               <FormControl size="small" fullWidth>
                 <InputLabel>Регион</InputLabel>
                 <Select
@@ -252,7 +251,7 @@ const Employees = () => {
                   label="Регион"
                 >
                   <MenuItem value="">Все</MenuItem>
-                  {branches?.data.map(({ id, name, childrens }) => (
+                  {branches?.data.map(({ id, name }) => (
                     <MenuItem key={id} value={id}>
                       {name}
                     </MenuItem>
@@ -260,7 +259,7 @@ const Employees = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={3} item>
+            <Grid xs={4} item>
               <FormControl size="small" fullWidth>
                 <InputLabel>Верификация</InputLabel>
                 <Select
@@ -276,7 +275,7 @@ const Employees = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={3} item>
+            <Grid xs={4} item>
               <FormControl size="small" fullWidth>
                 <InputLabel>Статус</InputLabel>
                 <Select
@@ -293,7 +292,7 @@ const Employees = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={3} item>
+            <Grid xs={4} item>
               <FormControl size="small" fullWidth>
                 <InputLabel>Роль</InputLabel>
                 <Select
@@ -306,44 +305,6 @@ const Employees = () => {
                   <MenuItem value="">Все</MenuItem>
                   {roles?.data.map(({ id, name }) => (
                     <MenuItem key={id} value={name}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid xs={3} item>
-              <FormControl size="small" fullWidth>
-                <InputLabel>Ориентир</InputLabel>
-                <Select
-                  value={orient}
-                  onChange={(event) => {
-                    setOrient(event.target.value)
-                  }}
-                  label="Ориентир"
-                >
-                  <MenuItem value="">Все</MenuItem>
-                  {orients?.data.map(({ id, name }) => (
-                    <MenuItem key={id} value={id}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid xs={3} item>
-              <FormControl size="small" fullWidth>
-                <InputLabel>Менеджер</InputLabel>
-                <Select
-                  value={manager}
-                  onChange={(event) => {
-                    setManager(event.target.value)
-                  }}
-                  label="Менеджер"
-                >
-                  <MenuItem value="">Все</MenuItem>
-                  {managers?.data.map(({ id, name }) => (
-                    <MenuItem key={id} value={id}>
                       {name}
                     </MenuItem>
                   ))}
@@ -398,6 +359,24 @@ const Employees = () => {
                 </TableCell>
                 <TableCell>
                   <TableSortLabel
+                    onClick={(event) => handleRequestSort(event, 'birthday')}
+                    active={orderBy === 'birthday'}
+                    direction={order}
+                  >
+                    Дата рождения
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    onClick={(event) => handleRequestSort(event, 'address')}
+                    active={orderBy === 'address'}
+                    direction={order}
+                  >
+                    Адресс
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
                     onClick={(event) => handleRequestSort(event, 'active')}
                     active={orderBy === 'active'}
                     direction={order}
@@ -409,26 +388,30 @@ const Employees = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data?.data.map(({ active, id, name, phone }) => (
-                <TableRow key={id}>
-                  <TableCell>{id}</TableCell>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>{phone}</TableCell>
-                  <TableCell padding="none" sx={{ px: 2 }}>
-                    {active ? <CheckRoundedIcon /> : <CloseRoundedIcon />}
-                  </TableCell>
-                  <TableCell padding={'none'} sx={{ px: 2 }} align="right">
-                    <div className="space-x-2">
-                      <IconButton onClick={editEmployee(id)}>
-                        <ModeEditOutlineRoundedIcon />
-                      </IconButton>
-                      <IconButton onClick={deleteEmployee(id)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {employees?.data.map(
+                ({ active, id, name, phone, birthday, address }) => (
+                  <TableRow key={id}>
+                    <TableCell>{id}</TableCell>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{phone}</TableCell>
+                    <TableCell>{birthday}</TableCell>
+                    <TableCell>{address}</TableCell>
+                    <TableCell padding="none" sx={{ px: 2 }}>
+                      {active ? <CheckRoundedIcon /> : <CloseRoundedIcon />}
+                    </TableCell>
+                    <TableCell padding={'none'} sx={{ px: 2 }} align="right">
+                      <div className="flex space-x-2">
+                        <IconButton onClick={editEmployee(id)}>
+                          <ModeEditOutlineRoundedIcon />
+                        </IconButton>
+                        <IconButton onClick={deleteEmployee(id)} color="error">
+                          <DeleteIcon />
+                        </IconButton>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ),
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -453,7 +436,7 @@ const Employees = () => {
           <Pagination
             size="large"
             color="primary"
-            count={data?.pagination.last_page}
+            count={employees?.pagination.last_page}
             page={page}
             onChange={handleChangePage}
           />
