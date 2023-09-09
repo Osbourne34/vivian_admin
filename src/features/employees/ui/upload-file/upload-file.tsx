@@ -3,7 +3,7 @@ import { ChangeEvent, useRef, useState } from 'react'
 import { Typography } from '@mui/material'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto'
 import { UseControllerProps, useController } from 'react-hook-form'
-import { FormInputs } from '@/pages/employees/create'
+import { FormInputs } from '../../types/employee'
 
 export const UploadFile = ({
   name,
