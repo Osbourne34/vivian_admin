@@ -16,6 +16,7 @@ import '@/shared/styles/globals.css'
 import { SnackbarProvider } from 'notistack'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ConfirmDialogProvider } from '@/shared/ui/confirm-dialog/context/context-provider'
 
 type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -33,7 +34,16 @@ type AppPropsWithLayout = AppProps &
 export default function MyApp(props: AppPropsWithLayout) {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props
   const getLayout = Component.getLayout ?? ((page) => page)
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  )
 
   return (
     <CacheProvider value={emotionCache}>
@@ -47,7 +57,9 @@ export default function MyApp(props: AppPropsWithLayout) {
           autoHideDuration={3000}
         >
           <QueryClientProvider client={queryClient}>
-            {getLayout(<Component {...pageProps} />)}
+            <ConfirmDialogProvider>
+              {getLayout(<Component {...pageProps} />)}
+            </ConfirmDialogProvider>
           </QueryClientProvider>
         </SnackbarProvider>
       </ThemeProvider>

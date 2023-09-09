@@ -4,7 +4,7 @@ import {
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
-import { Employee } from '../types/employee'
+import { Employee, EmployeeEdit } from '../types/employee'
 
 export const EmployeesService = {
   createEmployee: async (body: FormData) => {
@@ -23,10 +23,10 @@ export const EmployeesService = {
     orderby: 'asc' | 'desc'
     sort: string
     search: string
-    branch_id: string | null
+    branch_id: number | null
     sortbyverified: string
     sortbyactivity: string
-    role: string
+    role: string | null
   }) => {
     const { data } = await http<ResponseWithPagination<Employee[]>>(
       'api/users',
@@ -36,19 +36,9 @@ export const EmployeesService = {
   },
 
   getEmployee: async (id: number) => {
-    const { data } = await http<
-      ResponseWithData<{
-        branch_id: null | number
-        name: string
-        phone: string
-        birthday: string | null
-        address: string | null
-        description: string | null
-        avatar: string | null
-        roles: string[]
-        active: boolean
-      }>
-    >(`api/users/${id}/edit`)
+    const { data } = await http<ResponseWithData<EmployeeEdit>>(
+      `api/users/${id}/edit`,
+    )
 
     return data
   },
@@ -75,7 +65,14 @@ export const EmployeesService = {
 
   getBranches: async () => {
     const { data } = await http<
-      ResponseWithData<{ id: number; name: string }[]>
+      ResponseWithData<
+        {
+          id: number
+          name: string
+          parent_id: number
+          parent_name: string | null
+        }[]
+      >
     >(`api/filter/branches`, {
       params: {
         tree: 0,
@@ -85,26 +82,14 @@ export const EmployeesService = {
     return data
   },
 
-  getRoles: async () => {
+  getRoles: async (withOutRole: string) => {
     const { data } = await http<
       ResponseWithData<{ id: number; name: string }[]>
-    >('api/filter/roles')
-
-    return data
-  },
-
-  getOrients: async () => {
-    const { data } = await http<
-      ResponseWithData<{ id: number; name: string }[]>
-    >('api/filter/orients')
-
-    return data
-  },
-
-  getManagers: async () => {
-    const { data } = await http<
-      ResponseWithData<{ id: number; name: string }[]>
-    >('/api/filter/managers')
+    >('api/filter/roles', {
+      params: {
+        withOutRole,
+      },
+    })
 
     return data
   },
