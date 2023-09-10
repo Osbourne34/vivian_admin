@@ -3,7 +3,7 @@ import { ChangeEvent, useRef, useState } from 'react'
 import { Typography } from '@mui/material'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto'
 import { UseControllerProps, useController } from 'react-hook-form'
-import { FormInputs } from '../../types/employee'
+import { FormInputs } from '../forms/initial-data'
 
 export const UploadFile = ({
   name,
@@ -39,19 +39,20 @@ export const UploadFile = ({
           field.ref(instanse)
         }}
       />
-      <div
+      <button
         onClick={() => fileInput.current?.click()}
-        className="h-40 w-40 cursor-pointer rounded-full border border-solid border-gray-200"
+        type="button"
+        className="h-40 w-40 cursor-pointer rounded-full border border-solid border-gray-200 bg-transparent p-0"
       >
         {previewAvatar || defaultPhoto?.name ? (
-          <div className="w-fulls group relative h-full">
+          <div className="group relative h-full w-full">
             <img
               className="h-full w-full rounded-full object-cover"
               src={previewAvatar || defaultPhoto?.name}
               alt="avatar"
             />
 
-            <div className="absolute left-0 top-0 hidden h-full w-full flex-col items-center justify-center rounded-full text-white hover:bg-gray-800/60 group-hover:flex">
+            <div className="absolute left-0 top-0 flex h-0 w-0 flex-col items-center justify-center rounded-full text-white transition group-hover:h-full group-hover:w-full group-hover:bg-gray-800/60">
               <AddAPhotoIcon fontSize="large" />
               <Typography className="mt-1">Загрузить аватар</Typography>
             </div>
@@ -62,7 +63,7 @@ export const UploadFile = ({
             <Typography className="mt-1">Загрузить аватар</Typography>
           </div>
         )}
-      </div>
+      </button>
     </div>
   )
 }

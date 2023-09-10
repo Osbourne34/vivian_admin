@@ -1,9 +1,4 @@
-import { useEffect, useState } from 'react'
-import { EmployeesService } from '../../service/employees-service'
-import { Controller, SubmitHandler, useForm } from 'react-hook-form'
-import { FormInputs } from '../../types/employee'
-import { initialData } from './initial-data'
-import dayjs from 'dayjs'
+import { BaseSyntheticEvent } from 'react'
 import {
   Alert,
   AlertTitle,
@@ -18,82 +13,58 @@ import {
   Select,
   TextField,
 } from '@mui/material'
-import { UploadFile } from '../upload-file/upload-file'
-import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
+import { LoadingButton } from '@mui/lab'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { LoadingButton } from '@mui/lab'
-import { Error } from '@/shared/http'
-import { formErrors } from '@/shared/utils/form-errors'
 import { useQuery } from '@tanstack/react-query'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 
-interface EditFormProps {
-  id: number
-  submit: (body: FormData) => Promise<unknown>
+import { EmployeesService } from '../../service/employees-service'
+import { UploadFile } from '../upload-file/upload-file'
+import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
+import { formErrors } from '@/shared/utils/form-errors'
+import { Error } from '@/shared/http'
+import { FormInputs } from './initial-data'
+
+interface EmployeeFormProps {
   error: string
-  loading: boolean
+  initialData: FormInputs
+  submit: (
+    body: FormInputs,
+    event: BaseSyntheticEvent<object | any, any> | undefined,
+  ) => Promise<unknown>
+  requiredPassword: boolean
+  titleSubmit: string
 }
 
-export const EditForm = (props: EditFormProps) => {
-  const { id, submit, loading, error } = props
-
-  const [initValues, setInitValues] = useState<FormInputs>()
-
-  useEffect(() => {
-    EmployeesService.getEmployee(id).then(({ data }) => {
-      setInitValues({
-        ...data,
-        address: data.address ? data.address : '',
-        avatar: data.avatar ? new File([], data.avatar) : null,
-        birthday: data.birthday ? dayjs(data.birthday, 'DD MM YYYY') : null,
-        branch_id: data.branch_id ? String(data.branch_id) : '',
-        description: data.description ? data.description : '',
-        password: '',
-        password_confirmation: '',
-        phone: data.phone.slice(3),
-      })
-    })
-  }, [id])
+export const EmployeeForm = (props: EmployeeFormProps) => {
+  const { error, initialData, submit, requiredPassword, titleSubmit } = props
 
   const {
+    reset,
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setError: setFormError,
-    reset,
   } = useForm<FormInputs>({
     defaultValues: initialData,
-    values: initValues,
+    values: initialData,
   })
 
-  const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs, event) => {
-    data.phone = `998${data.phone}`
-    const formData = new FormData(event?.target)
+  const onSubmit: SubmitHandler<FormInputs> = async (data, event) => {
+    try {
+      await submit(data, event)
+      reset(initialData)
+    } catch (error) {
+      const err = error as Error
+      if (err.errors) {
+        const errors = formErrors(err.errors)
 
-    if (data.password === '') {
-      formData.delete('password')
-      formData.delete('password_confirmation')
+        errors.forEach((value, key) => {
+          setFormError(key, { message: value.join(',') })
+        })
+      }
     }
-    formData.set(
-      'birthday',
-      data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
-    )
-    formData.set('phone', data.phone)
-    formData.set('active', data.active ? '1' : '0')
-    formData.append('_method', 'PUT')
-
-    submit(formData)
-      .then(() => reset(initialData))
-      .catch((error) => {
-        const err = error as Error
-        if (err.errors) {
-          const errors = formErrors(err.errors)
-
-          errors.forEach((value, key) => {
-            setFormError(key, { message: value.join(',') })
-          })
-        }
-      })
   }
 
   const { data: branches } = useQuery(['branches'], () =>
@@ -234,11 +205,8 @@ export const EditForm = (props: EditFormProps) => {
                 name="password"
                 control={control}
                 rules={{
-                  validate: (value) => {
-                    if (value) {
-                      if (value.length < 6) return 'Минимум 6 символов'
-                    }
-                  },
+                  [requiredPassword ? 'required' : '']: 'Обязательное поле',
+                  minLength: { value: 6, message: 'Минимум 6 символов' },
                 }}
                 render={({ field }) => (
                   <FormControl fullWidth>
@@ -264,6 +232,7 @@ export const EditForm = (props: EditFormProps) => {
                 name="password_confirmation"
                 control={control}
                 rules={{
+                  [requiredPassword ? 'required' : '']: 'Обязательное поле',
                   validate: (value, values) => {
                     if (value !== values.password) return 'Пароли не совпадают'
                   },
@@ -324,7 +293,7 @@ export const EditForm = (props: EditFormProps) => {
               </FormControl>
             </Grid>
             <Grid xs={6} item>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={!!errors.roles}>
                 <InputLabel>Роль *</InputLabel>
                 <Controller
                   name="roles"
@@ -335,8 +304,6 @@ export const EditForm = (props: EditFormProps) => {
                       multiple
                       label="Роль *"
                       {...field}
-                      error={!!errors.roles}
-                      value={field.value || []}
                       onChange={(event) => {
                         const value = event.target.value
                         field.onChange(
@@ -381,8 +348,8 @@ export const EditForm = (props: EditFormProps) => {
       </Grid>
 
       <div className="mt-5 flex justify-end space-x-4">
-        <LoadingButton loading={loading} type="submit" variant="contained">
-          Сохранить
+        <LoadingButton loading={isSubmitting} type="submit" variant="contained">
+          {titleSubmit}
         </LoadingButton>
       </div>
     </form>

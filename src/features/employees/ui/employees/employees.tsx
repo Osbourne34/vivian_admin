@@ -11,7 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { EmployeesService } from '../../service/employees-service'
 import { Employee } from '../../types/employee'
 import { EmployeesFilter } from '../employees-filter/employees-filter'
-import { Status, Verify } from '../../config/filters'
+import { Status, Verify } from '../employees-filter/filters'
 
 import { Column, Sort, Table } from '@/shared/ui/table'
 import { useDebounce } from '@/shared/hooks'

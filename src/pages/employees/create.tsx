@@ -1,4 +1,4 @@
-import { ReactElement, useState } from 'react'
+import { BaseSyntheticEvent, ReactElement, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Paper, Typography } from '@mui/material'
@@ -7,7 +7,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSnackbar } from 'notistack'
 
 import { EmployeesService } from '@/features/employees'
-import { CreateForm } from '@/features/employees/ui/forms/create-form'
+import { EmployeeForm } from '@/features/employees/ui/forms/employee-form'
+import {
+  FormInputs,
+  initialData,
+} from '@/features/employees/ui/forms/initial-data'
+
 import { Layout } from '@/shared/layouts/layout'
 import { Error, ResponseWithMessage } from '@/shared/http'
 
@@ -37,9 +42,21 @@ const CreateEmployees = () => {
     },
   })
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (
+    data: FormInputs,
+    event: BaseSyntheticEvent<object | any, any> | undefined,
+  ) => {
+    data.phone = `998${data.phone}`
+    const formData = new FormData(event?.target)
+    formData.set(
+      'birthday',
+      data.birthday ? data.birthday.format('DD.MM.YYYY') : '',
+    )
+    formData.set('phone', data.phone)
+    formData.set('active', data.active ? '1' : '0')
+
     try {
-      await createMutation.mutateAsync(data)
+      await createMutation.mutateAsync(formData)
     } catch (error) {
       return Promise.reject(error)
     }
@@ -52,10 +69,12 @@ const CreateEmployees = () => {
       </Typography>
 
       <Paper elevation={4} className="p-5">
-        <CreateForm
+        <EmployeeForm
           error={error}
-          loading={createMutation.isLoading}
+          initialData={initialData}
           submit={handleSubmit}
+          requiredPassword={false}
+          titleSubmit="Создать сотрудника"
         />
       </Paper>
     </div>

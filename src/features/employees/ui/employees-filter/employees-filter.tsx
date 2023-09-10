@@ -20,7 +20,7 @@ import {
   Verify,
   statusValues,
   verifyValues,
-} from '../../config/filters'
+} from './filters'
 
 interface EmployeesFilterProps {
   search: string
