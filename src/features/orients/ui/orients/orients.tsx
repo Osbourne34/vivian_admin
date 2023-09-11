@@ -1,29 +1,29 @@
-import { useState } from 'react'
-import { useRouter } from 'next/router'
-
-import { IconButton, Paper, SelectChangeEvent } from '@mui/material'
-import { enqueueSnackbar } from 'notistack'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-import { EmployeesService } from '../../service/employees-service'
-import { Employee } from '../../types/employee'
-import { EmployeesFilter } from '../employees-filter/employees-filter'
-import { Status, Verify } from '../employees-filter/filters'
-
-import { Column, Sort, Table } from '@/shared/ui/table'
 import { useDebounce } from '@/shared/hooks'
+import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
+import { Column, Sort, Table } from '@/shared/ui/table'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/router'
+import { useRef, useState } from 'react'
+import { OrientsService } from '../../service/orients-service'
+import { enqueueSnackbar } from 'notistack'
+import { Orient } from '../../types/orient'
 import {
   Error,
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
-import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
+import { Dialog, DialogTitle, Paper, SelectChangeEvent } from '@mui/material'
 import Actions from '@/shared/ui/actions/actions'
+import { OrientsFilter } from '../orients-filter/orients-filter'
+import { OrientForm } from '../orient-form/orient-form'
+import { useModal } from '@/shared/ui/modal/context/modal-context'
+import { EditOrient } from '../edit-orient/edit-orient'
 
-export const Employees = () => {
+export const Orients = () => {
   const { push } = useRouter()
   const queryClient = useQueryClient()
   const { openConfirm, closeConfirm } = useConfirmDialog()
+  const { openModal } = useModal()
 
   const [sort, setSort] = useState<Sort>({
     orderby: 'asc',
@@ -35,38 +35,29 @@ export const Employees = () => {
 
   const [search, setSearch] = useState('')
   const [branch, setBranch] = useState<number | null>(null)
-  const [verify, setVerify] = useState<Verify>(Verify.All)
-  const [status, setStatus] = useState<Status>(Status.All)
-  const [role, setRole] = useState<string | null>(null)
 
   const debouncedSearchValue = useDebounce(search)
 
   const { data, isError, isFetching } = useQuery<
-    ResponseWithPagination<Employee[]>,
+    ResponseWithPagination<Orient[]>,
     Error
   >({
     queryKey: [
-      'employees',
+      'orients',
       sort,
       page,
       rowsPerPage,
       debouncedSearchValue,
       branch,
-      verify,
-      status,
-      role,
     ],
     queryFn: () =>
-      EmployeesService.getEmployees({
+      OrientsService.getOrients({
         branch_id: branch,
         orderby: sort.orderby,
         sort: sort.sort,
         page: page,
         perpage: rowsPerPage,
-        role,
         search: debouncedSearchValue,
-        sortbyactivity: status,
-        sortbyverified: verify,
       }),
     onError: (error) => {
       enqueueSnackbar({
@@ -79,18 +70,15 @@ export const Employees = () => {
   })
 
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
-    mutationFn: EmployeesService.deleteEmployee,
+    mutationFn: OrientsService.deleteOrient,
     onSuccess: (data) => {
       queryClient.invalidateQueries([
-        'employees',
+        'orients',
         sort,
         page,
         rowsPerPage,
         debouncedSearchValue,
         branch,
-        verify,
-        status,
-        role,
       ])
       closeConfirm()
       enqueueSnackbar(data.message, {
@@ -126,12 +114,15 @@ export const Employees = () => {
   }
 
   const handleUpdate = (id: number) => {
-    push(`/employees/edit/${id}`)
+    openModal({
+      title: 'Редактирование ориентира',
+      modal: <EditOrient id={id} />,
+    })
   }
 
   const handleDelete = (id: number) => {
     openConfirm({
-      text: 'Вы действительно хотите удалить этого сотрудника?',
+      text: 'Вы действительно хотите удалить этот ориентир?',
       onConfirm: async () => {
         await deleteMutation.mutateAsync(id)
       },
@@ -147,28 +138,13 @@ export const Employees = () => {
     },
     {
       key: 'name',
-      title: 'Имя',
+      title: 'Название',
       sortable: true,
     },
     {
-      key: 'phone',
-      title: 'Номер телефона',
+      key: 'branch_id',
+      title: 'Регион',
       sortable: true,
-    },
-    {
-      key: 'birthday',
-      title: 'День рождения',
-      sortable: true,
-    },
-    {
-      key: 'address',
-      title: 'Адресс',
-      sortable: true,
-    },
-    {
-      key: 'active',
-      title: 'Активен',
-      boolean: true,
     },
     {
       key: 'action',
@@ -187,30 +163,27 @@ export const Employees = () => {
   ]
 
   return (
-    <Paper elevation={4}>
-      <EmployeesFilter
-        search={search}
-        onChangeSearch={setSearch}
-        onChangeBranch={setBranch}
-        verify={verify}
-        onChangeVerify={setVerify}
-        status={status}
-        onChangeStatus={setStatus}
-        onChangeRole={setRole}
-      />
-      <Table
-        columns={columns}
-        data={data?.data}
-        onSort={handleSort}
-        sort={sort}
-        count={data?.pagination.last_page || 1}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        isLoading={isFetching}
-        isError={isError}
-      />
-    </Paper>
+    <>
+      <Paper elevation={4}>
+        <OrientsFilter
+          search={search}
+          onChangeSearch={setSearch}
+          onChangeBranch={setBranch}
+        />
+        <Table
+          columns={columns}
+          data={data?.data}
+          onSort={handleSort}
+          sort={sort}
+          count={data?.pagination.last_page || 1}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          isLoading={isFetching}
+          isError={isError}
+        />
+      </Paper>
+    </>
   )
 }

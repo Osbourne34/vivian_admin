@@ -16,7 +16,7 @@ const EmployeesPage = () => {
           href="/employees/create"
           variant="contained"
         >
-          Добавить сотрудника
+          Создать сотрудника
         </Button>
       </div>
 

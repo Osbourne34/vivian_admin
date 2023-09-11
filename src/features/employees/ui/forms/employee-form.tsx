@@ -25,6 +25,7 @@ import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
 import { formErrors } from '@/shared/utils/form-errors'
 import { Error } from '@/shared/http'
 import { FormInputs } from './initial-data'
+import { branchesSort } from '@/shared/utils/branches-sort'
 
 interface EmployeeFormProps {
   error: string
@@ -45,7 +46,7 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
-    setError: setFormError,
+    setError,
   } = useForm<FormInputs>({
     defaultValues: initialData,
     values: initialData,
@@ -61,14 +62,25 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
         const errors = formErrors(err.errors)
 
         errors.forEach((value, key) => {
-          setFormError(key, { message: value.join(',') })
+          setError(key, { message: value.join(',') })
         })
       }
     }
   }
 
-  const { data: branches } = useQuery(['branches'], () =>
-    EmployeesService.getBranches(),
+  const { data: branches } = useQuery(
+    ['branches'],
+    () => EmployeesService.getBranches(),
+    {
+      select: (data) => {
+        const result = branchesSort(data.data)
+
+        return {
+          data: result,
+          status: data.status,
+        }
+      },
+    },
   )
 
   const { data: roles } = useQuery(['roles'], () =>
@@ -270,9 +282,7 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
                       {...field}
                       onChange={(event) => field.onChange(event.target.value)}
                     >
-                      <MenuItem value={''} className="pl-8">
-                        Удалить значение
-                      </MenuItem>
+                      <MenuItem value={''}>Удалить значение</MenuItem>
                       {branches?.data.map(
                         ({ id, name, parent_id, parent_name }) => {
                           if (parent_id === 0 && !parent_name) {

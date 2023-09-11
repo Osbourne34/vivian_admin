@@ -15,12 +15,8 @@ import { useQuery } from '@tanstack/react-query'
 import { EmployeesService } from '../../service/employees-service'
 import { ComboBox } from '@/shared/ui/combobox/combobox'
 
-import {
-  Status,
-  Verify,
-  statusValues,
-  verifyValues,
-} from './filters'
+import { Status, Verify, statusValues, verifyValues } from './filters'
+import { branchesSort } from '@/shared/utils/branches-sort'
 
 interface EmployeesFilterProps {
   search: string
@@ -50,6 +46,14 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
     isFetching: branchesLoading,
     refetch: branchesRefetch,
   } = useQuery(['branches'], () => EmployeesService.getBranches(), {
+    select: (data) => {
+      const result = branchesSort(data.data)
+
+      return {
+        data: result,
+        status: data.status,
+      }
+    },
     enabled: false,
   })
 
@@ -95,7 +99,7 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
       })}
     >
       <Grid container spacing={2}>
-        <Grid xs={4} item>
+        <Grid xs={8} item>
           <TextField
             onChange={handleChangeSearch}
             value={search}

@@ -16,7 +16,8 @@ import '@/shared/styles/globals.css'
 import { SnackbarProvider } from 'notistack'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ConfirmDialogProvider } from '@/shared/ui/confirm-dialog/context/context-provider'
+import { ConfirmDialogProvider } from '@/shared/ui/confirm-dialog/context/confirm-dialog-provider'
+import { ModalProvider } from '@/shared/ui/modal/context/modal-rovider'
 
 type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -58,7 +59,9 @@ export default function MyApp(props: AppPropsWithLayout) {
         >
           <QueryClientProvider client={queryClient}>
             <ConfirmDialogProvider>
-              {getLayout(<Component {...pageProps} />)}
+              <ModalProvider>
+                {getLayout(<Component {...pageProps} />)}
+              </ModalProvider>
             </ConfirmDialogProvider>
           </QueryClientProvider>
         </SnackbarProvider>

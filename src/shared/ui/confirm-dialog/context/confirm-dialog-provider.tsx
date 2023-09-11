@@ -1,5 +1,5 @@
 import { ReactNode, useRef, useState } from 'react'
-import { ConfirmDialogContext, ModalState } from './context'
+import { ConfirmDialogContext, ModalState } from './confirm-dialog-context'
 import { ConfirmDialog } from '../confirm-dialog'
 
 interface ConfirmDialogProviderProps {
