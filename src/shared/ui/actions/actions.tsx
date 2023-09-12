@@ -7,11 +7,11 @@ interface ActionsProps {
   onDelete: () => void
 }
 
-const Actions = (props: ActionsProps) => {
+export const Actions = (props: ActionsProps) => {
   const { onUpdate, onDelete } = props
 
   return (
-    <div className={'flex gap-2'}>
+    <div className={'flex justify-end gap-2'}>
       <IconButton onClick={onUpdate} size="small" color="primary">
         <EditRoundedIcon />
       </IconButton>
@@ -21,5 +21,3 @@ const Actions = (props: ActionsProps) => {
     </div>
   )
 }
-
-export default Actions

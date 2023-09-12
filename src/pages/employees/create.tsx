@@ -73,7 +73,7 @@ const CreateEmployees = () => {
           error={error}
           initialData={initialData}
           submit={handleSubmit}
-          requiredPassword={false}
+          requiredPassword={true}
           titleSubmit="Создать"
         />
       </Paper>

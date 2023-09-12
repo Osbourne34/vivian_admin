@@ -4,7 +4,7 @@ import {
   ResponseWithPagination,
   http,
 } from '@/shared/http'
-import { Branch } from '../types/Branch'
+import { Branch, BranchDetail } from '../types/branch'
 
 export const BranchesService = {
   getBranches: async (params: {
@@ -23,7 +23,7 @@ export const BranchesService = {
   },
 
   getBranch: async (id: number) => {
-    const { data } = await http<ResponseWithData<Branch>>(
+    const { data } = await http<ResponseWithData<BranchDetail>>(
       `api/branches/${id}/edit`,
     )
 
@@ -55,6 +55,7 @@ export const BranchesService = {
       `/api/branches/${id}`,
       body,
     )
+
     return data
   },
 
@@ -62,6 +63,18 @@ export const BranchesService = {
     const { data } = await http.delete<ResponseWithMessage>(
       `api/branches/${id}`,
     )
+
+    return data
+  },
+
+  getTreeBranches: async () => {
+    const { data } = await http<
+      ResponseWithData<{ id: number; name: string }[]>
+    >('api/filter/branches', {
+      params: {
+        tree: '1',
+      },
+    })
 
     return data
   },

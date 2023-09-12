@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { IconButton, Paper, SelectChangeEvent } from '@mui/material'
+import { Paper, SelectChangeEvent } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -11,14 +11,15 @@ import { EmployeesFilter } from '../employees-filter/employees-filter'
 import { Status, Verify } from '../employees-filter/filters'
 
 import { Column, Sort, Table } from '@/shared/ui/table'
+import { Actions } from '@/shared/ui/actions/actions'
 import { useDebounce } from '@/shared/hooks'
+import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
+
 import {
   Error,
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
-import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
-import Actions from '@/shared/ui/actions/actions'
 
 export const Employees = () => {
   const { push } = useRouter()
@@ -185,6 +186,10 @@ export const Employees = () => {
       width: 100,
     },
   ]
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearchValue, branch, verify, status, role])
 
   return (
     <Paper elevation={4}>

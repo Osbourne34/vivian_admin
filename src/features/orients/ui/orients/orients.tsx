@@ -1,23 +1,27 @@
-import { useDebounce } from '@/shared/hooks'
-import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
-import { Column, Sort, Table } from '@/shared/ui/table'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
-import { OrientsService } from '../../service/orients-service'
+
+import { Paper, SelectChangeEvent } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { OrientsFilter } from '../orients-filter/orients-filter'
+import { EditOrient } from '../edit-orient/edit-orient'
+import { OrientsService } from '../../service/orients-service'
 import { Orient } from '../../types/orient'
+
+import { useDebounce } from '@/shared/hooks'
+import { useModal } from '@/shared/ui/modal/context/modal-context'
+import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
+
+import { Column, Sort, Table } from '@/shared/ui/table'
+import { Actions } from '@/shared/ui/actions/actions'
+
 import {
   Error,
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
-import { Dialog, DialogTitle, Paper, SelectChangeEvent } from '@mui/material'
-import Actions from '@/shared/ui/actions/actions'
-import { OrientsFilter } from '../orients-filter/orients-filter'
-import { OrientForm } from '../orient-form/orient-form'
-import { useModal } from '@/shared/ui/modal/context/modal-context'
-import { EditOrient } from '../edit-orient/edit-orient'
 
 export const Orients = () => {
   const { push } = useRouter()
@@ -161,6 +165,10 @@ export const Orients = () => {
       width: 100,
     },
   ]
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearchValue, branch])
 
   return (
     <>

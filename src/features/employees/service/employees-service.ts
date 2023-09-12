@@ -4,7 +4,7 @@ import {
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
-import { Employee, EmployeeEdit } from '../types/employee'
+import { Employee, EmployeeDetail } from '../types/employee'
 
 export const EmployeesService = {
   createEmployee: async (body: FormData) => {
@@ -36,7 +36,7 @@ export const EmployeesService = {
   },
 
   getEmployee: async (id: number) => {
-    const { data } = await http<ResponseWithData<EmployeeEdit>>(
+    const { data } = await http<ResponseWithData<EmployeeDetail>>(
       `api/users/${id}/edit`,
     )
 

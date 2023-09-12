@@ -25,20 +25,22 @@ const EditEmployees = () => {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    EmployeesService.getEmployee(Number(query.id)).then(({ data }) => {
-      setInitFormData({
-        ...data,
-        address: data.address ? data.address : '',
-        avatar: data.avatar ? new File([], data.avatar) : null,
-        birthday: data.birthday ? dayjs(data.birthday, 'DD MM YYYY') : null,
-        branch_id: data.branch_id ? String(data.branch_id) : '',
-        description: data.description ? data.description : '',
-        password: '',
-        password_confirmation: '',
-        phone: data.phone.slice(3),
+    EmployeesService.getEmployee(Number(query.id))
+      .then(({ data }) => {
+        setInitFormData({
+          ...data,
+          address: data.address ? data.address : '',
+          avatar: data.avatar ? new File([], data.avatar) : null,
+          birthday: data.birthday ? dayjs(data.birthday, 'DD MM YYYY') : null,
+          branch_id: data.branch_id ? String(data.branch_id) : '',
+          description: data.description ? data.description : '',
+          password: '',
+          password_confirmation: '',
+          phone: data.phone.slice(3),
+        })
       })
-    })
-  }, [])
+      .catch(() => {})
+  }, [query.id])
 
   const updateMutation = useMutation<
     ResponseWithMessage,

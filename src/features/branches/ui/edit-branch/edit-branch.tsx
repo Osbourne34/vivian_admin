@@ -1,23 +1,21 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { CircularProgress } from '@mui/material'
 import { useSnackbar } from 'notistack'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-
-import { OrientForm } from '../orient-form/orient-form'
-import { FormInputs } from '../orient-form/initial-data'
-import { OrientsService } from '../../service/orients-service'
-import { Orient } from '../../types/orient'
-
 import { useModal } from '@/shared/ui/modal/context/modal-context'
+import { BranchDetail } from '../../types/branch'
 import { Error, ResponseWithMessage } from '@/shared/http'
+import { BranchesService } from '../../service/branches-service'
+import { FormInputs } from '../branch-form/initial-data'
+import { CircularProgress } from '@mui/material'
+import { BranchForm } from '../branch-form/branch-form'
 
-interface EditOrientProps {
+interface EditBranchProps {
   id: number
 }
 
-export const EditOrient = (props: EditOrientProps) => {
+const EditBranch = (props: EditBranchProps) => {
   const { id } = props
 
   const router = useRouter()
@@ -25,18 +23,21 @@ export const EditOrient = (props: EditOrientProps) => {
   const { enqueueSnackbar } = useSnackbar()
 
   const { closeModal } = useModal()
-  const [orient, setOrient] = useState<Orient>()
+  const [branch, setBranch] = useState<BranchDetail>()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
   const updateMutation = useMutation<
     ResponseWithMessage,
     Error,
-    { id: number; body: { name: string; branch_id: string } }
+    {
+      id: number
+      body: { name: string; parent_id: string; warehouse: boolean }
+    }
   >({
-    mutationFn: OrientsService.updateOrient,
+    mutationFn: BranchesService.updateBranch,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['orients'])
+      queryClient.invalidateQueries(['branches'])
       closeModal()
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -64,8 +65,8 @@ export const EditOrient = (props: EditOrientProps) => {
     const getOrient = async () => {
       setIsLoading(true)
       try {
-        const { data } = await OrientsService.getOrient(id)
-        setOrient(data)
+        const { data } = await BranchesService.getBranch(id)
+        setBranch(data)
       } catch (error) {
       } finally {
         setIsLoading(false)
@@ -82,13 +83,16 @@ export const EditOrient = (props: EditOrientProps) => {
           <CircularProgress />
         </div>
       ) : (
-        <OrientForm
+        <BranchForm
           error={error}
           onCancel={() => closeModal()}
           submit={handleSubmit}
           initialData={{
-            branch_id: orient ? orient.branch_id : '',
-            name: orient ? orient.name : '',
+            name: branch ? branch.name : '',
+            parent_id: Boolean(branch?.parent_id)
+              ? String(branch?.parent_id)
+              : '',
+            warehouse: Boolean(branch?.warehouse),
           }}
           submitTitle="Сохранить"
         />
@@ -96,3 +100,5 @@ export const EditOrient = (props: EditOrientProps) => {
     </>
   )
 }
+
+export default EditBranch
