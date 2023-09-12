@@ -4,9 +4,11 @@ import {
   Alert,
   AlertTitle,
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   InputLabel,
   MenuItem,
@@ -120,6 +122,18 @@ export const BranchForm = (props: BranchFormProps) => {
               </FormHelperText>
             ))}
         </FormControl>
+
+        <Controller
+          name="warehouse"
+          control={control}
+          render={({ field }) => (
+            <FormControlLabel
+              className="mt-2"
+              control={<Checkbox {...field} checked={field.value} />}
+              label="Имеется склад?"
+            />
+          )}
+        />
       </DialogContent>
 
       <DialogActions>

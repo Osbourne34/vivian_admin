@@ -122,6 +122,7 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
                 render={({ field }) => (
                   <FormControl fullWidth>
                     <TextField
+                      autoFocus
                       label="Имя *"
                       variant="outlined"
                       error={!!errors.name}

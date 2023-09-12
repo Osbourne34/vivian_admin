@@ -90,6 +90,7 @@ export const OrientForm = (props: OrientFormProps) => {
           render={({ field }) => (
             <FormControl fullWidth>
               <TextField
+                autoFocus
                 label="Название *"
                 variant="outlined"
                 error={!!errors.name}
