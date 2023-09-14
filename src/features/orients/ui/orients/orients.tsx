@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { OrientsFilter } from '../orients-filter/orients-filter'
 import { EditOrient } from '../edit-orient/edit-orient'
 import { OrientsService } from '../../service/orients-service'
-import { Orient } from '../../types/orient'
+import { Orient } from '../../types/Orient'
 
 import { useDebounce } from '@/shared/hooks'
 import { useModal } from '@/shared/ui/modal/context/modal-context'

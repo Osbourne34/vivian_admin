@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { OrientForm } from '../orient-form/orient-form'
 import { FormInputs } from '../orient-form/initial-data'
 import { OrientsService } from '../../service/orients-service'
-import { Orient } from '../../types/orient'
+import { Orient } from '../../types/Orient'
 
 import { useModal } from '@/shared/ui/modal/context/modal-context'
 import { Error, ResponseWithMessage } from '@/shared/http'

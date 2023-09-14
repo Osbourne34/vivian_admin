@@ -4,7 +4,7 @@ import {
   ResponseWithPagination,
   http,
 } from '@/shared/http'
-import { Branch, BranchDetail } from '../types/branch'
+import { Branch, BranchDetail } from '../types/Branch'
 
 export const BranchesService = {
   getBranches: async (params: {
