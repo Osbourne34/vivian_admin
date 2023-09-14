@@ -4,17 +4,17 @@ import { NextPage } from 'next'
 import Head from 'next/head'
 import { AppProps } from 'next/app'
 
-import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { CacheProvider, EmotionCache } from '@emotion/react'
 
-import { theme, createEmotionCache } from '@/shared/theme'
+import { createEmotionCache } from '@/shared/theme'
 
 const clientSideEmotionCache = createEmotionCache()
 
 import '@/shared/styles/globals.css'
 import { SnackbarProvider } from 'notistack'
 
+import { ColorModeProvider } from '@/shared/theme/theme/color-mode-provider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConfirmDialogProvider } from '@/shared/ui/confirm-dialog/context/confirm-dialog-provider'
 import { ModalProvider } from '@/shared/ui/modal/context/modal-rovider'
@@ -51,7 +51,7 @@ export default function MyApp(props: AppPropsWithLayout) {
       <Head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </Head>
-      <ThemeProvider theme={theme}>
+      <ColorModeProvider>
         <CssBaseline />
         <SnackbarProvider
           anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -65,7 +65,7 @@ export default function MyApp(props: AppPropsWithLayout) {
             </ConfirmDialogProvider>
           </QueryClientProvider>
         </SnackbarProvider>
-      </ThemeProvider>
+      </ColorModeProvider>
     </CacheProvider>
   )
 }

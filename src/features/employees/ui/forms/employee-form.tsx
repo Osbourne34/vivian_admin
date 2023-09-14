@@ -311,17 +311,7 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
                   control={control}
                   rules={{ required: 'Обязательное поле' }}
                   render={({ field }) => (
-                    <Select
-                      multiple
-                      label="Роль *"
-                      {...field}
-                      onChange={(event) => {
-                        const value = event.target.value
-                        field.onChange(
-                          typeof value === 'string' ? value.split(',') : value,
-                        )
-                      }}
-                    >
+                    <Select {...field} multiple label="Роль *">
                       {roles?.data.map(({ id, name }) => (
                         <MenuItem key={id} value={name}>
                           {name}

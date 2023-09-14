@@ -137,7 +137,7 @@ export const NestedTable = (props: NestedTableProps) => {
       </TableContainer>
       <Box
         sx={(theme) => ({
-          borderTop: `1px solid ${theme.palette.grey[300]}`,
+          borderTop: `1px solid ${theme.palette.action.disabledBackground}`,
           display: 'flex',
           justifyContent: { xs: 'flex-start', md: 'flex-end' },
           alignItems: 'center',

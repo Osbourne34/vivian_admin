@@ -4,6 +4,7 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded'
 import PinDropRoundedIcon from '@mui/icons-material/PinDropRounded'
 import ExploreRoundedIcon from '@mui/icons-material/ExploreRounded'
+import LanRoundedIcon from '@mui/icons-material/LanRounded'
 
 import { OverridableComponent } from '@mui/material/OverridableComponent'
 import { SvgIconTypeMap } from '@mui/material'
@@ -39,5 +40,11 @@ export const routes: Route[] = [
     title: 'Ориентиры',
     link: '/orients',
     Icon: ExploreRoundedIcon,
+  },
+  {
+    id: nanoid(),
+    title: 'Роли',
+    link: '/roles',
+    Icon: LanRoundedIcon,
   },
 ]

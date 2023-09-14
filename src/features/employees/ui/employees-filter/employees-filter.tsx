@@ -95,7 +95,7 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
     <Box
       className="p-3"
       sx={(theme) => ({
-        borderBottom: `1px solid ${theme.palette.grey[300]}`,
+        borderBottom: `1px solid ${theme.palette.action.disabledBackground}`,
       })}
     >
       <Grid container spacing={2}>

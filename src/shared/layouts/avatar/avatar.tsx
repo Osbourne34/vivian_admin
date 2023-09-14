@@ -16,7 +16,7 @@ export const Avatar = () => {
 
   return (
     <>
-      <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, ml: 'auto' }}>
+      <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
         <AvatarMUI />
       </IconButton>
       <Menu

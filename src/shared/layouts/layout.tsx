@@ -9,6 +9,10 @@ import Toolbar from '@mui/material/Toolbar'
 
 import { Avatar } from './avatar/avatar'
 import { SidebarMenu } from './sidebar-menu/sidebar-menu'
+import { useColorMode } from '../theme/theme/color-mode-context'
+import Brightness4Icon from '@mui/icons-material/Brightness4'
+import Brightness7Icon from '@mui/icons-material/Brightness7'
+import { useTheme } from '@mui/material'
 
 const drawerWidth = 300
 
@@ -18,6 +22,8 @@ interface LayoutProps {
 
 export const Layout = (props: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = React.useState(false)
+  const { toggleColorMode } = useColorMode()
+  const theme = useTheme()
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
@@ -45,7 +51,21 @@ export const Layout = (props: LayoutProps) => {
           >
             <MenuIcon />
           </IconButton>
-          <Avatar />
+
+          <div className="ml-auto space-x-4">
+            <IconButton
+              sx={{ ml: 1 }}
+              onClick={toggleColorMode}
+              color="inherit"
+            >
+              {theme.palette.mode === 'dark' ? (
+                <Brightness7Icon />
+              ) : (
+                <Brightness4Icon />
+              )}
+            </IconButton>
+            <Avatar />
+          </div>
         </Toolbar>
       </AppBar>
       <Box
