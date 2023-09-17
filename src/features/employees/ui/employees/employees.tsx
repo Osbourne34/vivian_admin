@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Paper, SelectChangeEvent } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import debounce from 'lodash.debounce'
 
 import { EmployeesService } from '../../service/employees-service'
 import { Employee } from '../../types/employee'
@@ -12,7 +13,6 @@ import { Status, Verify } from '../employees-filter/filters'
 
 import { Column, Sort, Table } from '@/shared/ui/table'
 import { Actions } from '@/shared/ui/actions/actions'
-import { useDebounce } from '@/shared/hooks'
 import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
 
 import {
@@ -35,17 +35,17 @@ export const Employees = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   const [search, setSearch] = useState('')
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
   const [branch, setBranch] = useState<number | null>(null)
   const [verify, setVerify] = useState<Verify>(Verify.All)
   const [status, setStatus] = useState<Status>(Status.All)
   const [role, setRole] = useState<string | null>(null)
 
-  const debouncedSearchValue = useDebounce(search)
-
-  const { data, isError, isFetching } = useQuery<
-    ResponseWithPagination<Employee[]>,
-    Error
-  >({
+  const {
+    data: employees,
+    isError,
+    isFetching,
+  } = useQuery<ResponseWithPagination<Employee[]>, Error>({
     queryKey: [
       'employees',
       sort,
@@ -82,17 +82,22 @@ export const Employees = () => {
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
     mutationFn: EmployeesService.deleteEmployee,
     onSuccess: (data) => {
-      queryClient.invalidateQueries([
-        'employees',
-        sort,
-        page,
-        rowsPerPage,
-        debouncedSearchValue,
-        branch,
-        verify,
-        status,
-        role,
-      ])
+      if (employees?.data.length === 1 && page !== 1) {
+        setPage((prevState) => prevState - 1)
+      } else {
+        queryClient.invalidateQueries([
+          'employees',
+          sort,
+          page,
+          rowsPerPage,
+          debouncedSearchValue,
+          branch,
+          verify,
+          status,
+          role,
+        ])
+      }
+
       closeConfirm()
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -125,6 +130,14 @@ export const Employees = () => {
     setRowsPerPage(parseInt(event.target.value, 10))
     setPage(1)
   }
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setDebouncedSearchValue(value)
+      setPage(1)
+    }, 500),
+    [],
+  )
 
   const handleUpdate = (id: number) => {
     push(`/employees/edit/${id}`)
@@ -187,28 +200,39 @@ export const Employees = () => {
     },
   ]
 
-  useEffect(() => {
-    setPage(1)
-  }, [debouncedSearchValue, branch, verify, status, role])
-
   return (
     <Paper elevation={4}>
       <EmployeesFilter
         search={search}
-        onChangeSearch={setSearch}
-        onChangeBranch={setBranch}
+        onChangeSearch={(value) => {
+          debouncedSearch(value)
+          setSearch(value)
+        }}
+        onChangeBranch={(value) => {
+          setBranch(value)
+          setPage(1)
+        }}
         verify={verify}
-        onChangeVerify={setVerify}
+        onChangeVerify={(value) => {
+          setVerify(value)
+          setPage(1)
+        }}
         status={status}
-        onChangeStatus={setStatus}
-        onChangeRole={setRole}
+        onChangeStatus={(value) => {
+          setStatus(value)
+          setPage(1)
+        }}
+        onChangeRole={(value) => {
+          setRole(value)
+          setPage(1)
+        }}
       />
       <Table
         columns={columns}
-        data={data?.data}
+        data={employees?.data}
         onSort={handleSort}
         sort={sort}
-        count={data?.pagination.last_page || 1}
+        count={employees?.pagination.last_page || 1}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}

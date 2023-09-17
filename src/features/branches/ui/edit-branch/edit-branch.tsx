@@ -88,10 +88,8 @@ const EditBranch = (props: EditBranchProps) => {
           onCancel={() => closeModal()}
           submit={handleSubmit}
           initialData={{
-            name: branch ? branch.name : '',
-            parent_id: Boolean(branch?.parent_id)
-              ? String(branch?.parent_id)
-              : '',
+            name: branch?.name ? branch.name : '',
+            parent_id: branch?.parent_id ? String(branch?.parent_id) : '',
             warehouse: Boolean(branch?.warehouse),
           }}
           submitTitle="Сохранить"

@@ -1,33 +1,28 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { Paper, SelectChangeEvent } from '@mui/material'
-import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-import { OrientsFilter } from '../orients-filter/orients-filter'
-import { EditOrient } from '../edit-orient/edit-orient'
-import { OrientsService } from '../../service/orients-service'
-import { Orient } from '../../types/Orient'
-
-import { useModal } from '@/shared/ui/modal/context/modal-context'
 import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
-
 import { Column, Sort, Table } from '@/shared/ui/table'
-import { Actions } from '@/shared/ui/actions/actions'
-
 import {
   Error,
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
+import { Client } from '../../types/client'
+import { ClientsService } from '../../service/client-service'
+import { enqueueSnackbar } from 'notistack'
+import { Paper, SelectChangeEvent } from '@mui/material'
+import { Actions } from '@/shared/ui/actions/actions'
+import { ClientsFilter } from '../clients-filter/clients-filter'
+import { Status, Verify } from '../clients-filter/filters'
+
 import debounce from 'lodash.debounce'
 
-export const Orients = () => {
+export const Clients = () => {
   const { push } = useRouter()
   const queryClient = useQueryClient()
   const { openConfirm, closeConfirm } = useConfirmDialog()
-  const { openModal } = useModal()
 
   const [sort, setSort] = useState<Sort>({
     orderby: 'asc',
@@ -40,28 +35,37 @@ export const Orients = () => {
   const [search, setSearch] = useState('')
   const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
   const [branch, setBranch] = useState<number | null>(null)
+  const [manager, setManager] = useState<number | null>(null)
+  const [verify, setVerify] = useState<Verify>(Verify.All)
+  const [status, setStatus] = useState<Status>(Status.All)
 
   const {
-    data: orients,
+    data: clients,
     isError,
     isFetching,
-  } = useQuery<ResponseWithPagination<Orient[]>, Error>({
+  } = useQuery<ResponseWithPagination<Client[]>, Error>({
     queryKey: [
-      'orients',
+      'clients',
       sort,
       page,
       rowsPerPage,
       debouncedSearchValue,
       branch,
+      manager,
+      verify,
+      status,
     ],
     queryFn: () =>
-      OrientsService.getOrients({
+      ClientsService.getClients({
         branch_id: branch,
         orderby: sort.orderby,
         sort: sort.sort,
         page: page,
         perpage: rowsPerPage,
         search: debouncedSearchValue,
+        manager_id: manager,
+        sortbyactivity: status,
+        sortbyverified: verify,
       }),
     onError: (error) => {
       enqueueSnackbar({
@@ -74,20 +78,24 @@ export const Orients = () => {
   })
 
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
-    mutationFn: OrientsService.deleteOrient,
+    mutationFn: ClientsService.deleteClient,
     onSuccess: (data) => {
-      if (orients?.data.length === 1 && page !== 1) {
+      if (clients?.data.length === 1 && page !== 1) {
         setPage((prevState) => prevState - 1)
       } else {
         queryClient.invalidateQueries([
-          'orients',
+          'clients',
           sort,
           page,
           rowsPerPage,
           debouncedSearchValue,
           branch,
+          manager,
+          verify,
+          status,
         ])
       }
+
       closeConfirm()
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -130,15 +138,12 @@ export const Orients = () => {
   )
 
   const handleUpdate = (id: number) => {
-    openModal({
-      title: 'Редактирование ориентира',
-      modal: <EditOrient id={id} />,
-    })
+    push(`/clients/edit/${id}`)
   }
 
   const handleDelete = (id: number) => {
     openConfirm({
-      text: 'Вы действительно хотите удалить этот ориентир?',
+      text: 'Вы действительно хотите удалить этого клиента?',
       onConfirm: async () => {
         await deleteMutation.mutateAsync(id)
       },
@@ -154,13 +159,33 @@ export const Orients = () => {
     },
     {
       key: 'name',
-      title: 'Название',
+      title: 'Имя',
       sortable: true,
     },
     {
-      key: 'branch_id',
-      title: 'Регион',
+      key: 'phone',
+      title: 'Номер телефона',
       sortable: true,
+    },
+    {
+      key: 'birthday',
+      title: 'День рождения',
+      sortable: true,
+    },
+    {
+      key: 'address',
+      title: 'Адресс',
+      sortable: true,
+    },
+    {
+      key: 'manager_id',
+      title: 'Менеджер',
+      sortable: true,
+    },
+    {
+      key: 'active',
+      title: 'Активен',
+      boolean: true,
     },
     {
       key: 'action',
@@ -179,33 +204,45 @@ export const Orients = () => {
   ]
 
   return (
-    <>
-      <Paper elevation={4}>
-        <OrientsFilter
-          search={search}
-          onChangeSearch={(value) => {
-            debouncedSearch(value)
-            setSearch(value)
-          }}
-          onChangeBranch={(value) => {
-            setBranch(value)
-            setPage(1)
-          }}
-        />
-        <Table
-          columns={columns}
-          data={orients?.data}
-          onSort={handleSort}
-          sort={sort}
-          count={orients?.pagination.last_page || 1}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          isLoading={isFetching}
-          isError={isError}
-        />
-      </Paper>
-    </>
+    <Paper elevation={4}>
+      <ClientsFilter
+        search={search}
+        onChangeSearch={(value) => {
+          debouncedSearch(value)
+          setSearch(value)
+        }}
+        onChangeBranch={(value) => {
+          setBranch(value)
+          setPage(1)
+        }}
+        verify={verify}
+        onChangeVerify={(value) => {
+          setVerify(value)
+          setPage(1)
+        }}
+        status={status}
+        onChangeStatus={(value) => {
+          setStatus(value)
+          setPage(1)
+        }}
+        onChangeManager={(value) => {
+          setManager(value)
+          setPage(1)
+        }}
+      />
+      <Table
+        columns={columns}
+        data={clients?.data}
+        onSort={handleSort}
+        sort={sort}
+        count={clients?.pagination.last_page || 1}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        isLoading={isFetching}
+        isError={isError}
+      />
+    </Paper>
   )
 }

@@ -1,5 +1,4 @@
-import { ChangeEvent } from 'react'
-
+import { ComboBox } from '@/shared/ui/combobox/combobox'
 import {
   Box,
   FormControl,
@@ -10,15 +9,13 @@ import {
   SelectChangeEvent,
   TextField,
 } from '@mui/material'
-
-import { useQuery } from '@tanstack/react-query'
+import { ChangeEvent } from 'react'
 import { Status, Verify, statusValues, verifyValues } from './filters'
-
-import { ComboBox } from '@/shared/ui/combobox/combobox'
 import { Filters } from '@/shared/api/filters/filters'
+import { useQuery } from '@tanstack/react-query'
 import { branchesSort } from '@/shared/utils/branches-sort'
 
-interface EmployeesFilterProps {
+interface ClientsFilterProps {
   search: string
   onChangeSearch: (value: string) => void
   onChangeBranch: (value: number | null) => void
@@ -26,10 +23,10 @@ interface EmployeesFilterProps {
   onChangeVerify: (value: Verify) => void
   status: Status
   onChangeStatus: (value: Status) => void
-  onChangeRole: (value: string | null) => void
+  onChangeManager: (value: number | null) => void
 }
 
-export const EmployeesFilter = (props: EmployeesFilterProps) => {
+export const ClientsFilter = (props: ClientsFilterProps) => {
   const {
     search,
     onChangeSearch,
@@ -38,14 +35,14 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
     onChangeVerify,
     status,
     onChangeStatus,
-    onChangeRole,
+    onChangeManager,
   } = props
 
   const {
     data: branches,
     isFetching: branchesLoading,
     refetch: branchesRefetch,
-  } = useQuery(['branches'], Filters.getBranches, {
+  } = useQuery(['branches'], () => Filters.getBranches(), {
     select: (data) => {
       const result = branchesSort(data.data)
 
@@ -58,10 +55,10 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
   })
 
   const {
-    data: roles,
-    isFetching: rolesLoading,
-    refetch: rolesRefetch,
-  } = useQuery(['roles'], () => Filters.getRoles('client'), {
+    data: managers,
+    isFetching: managersLoading,
+    refetch: managersRefetch,
+  } = useQuery(['managers'], Filters.getManagers, {
     enabled: false,
   })
 
@@ -84,11 +81,11 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
     onChangeStatus(event.target.value as Status)
   }
 
-  const handleChangeRole = (
+  const handleChangeManager = (
     event: any,
     value: { id: number; name: string } | null,
   ) => {
-    onChangeRole(value?.name || null)
+    onChangeManager(value?.id || null)
   }
 
   return (
@@ -148,12 +145,12 @@ export const EmployeesFilter = (props: EmployeesFilterProps) => {
         </Grid>
         <Grid xs={4} item>
           <ComboBox
-            options={roles?.data || []}
+            options={managers?.data || []}
             labelKey={'name'}
-            onChange={handleChangeRole}
-            isLoading={rolesLoading}
-            refetch={rolesRefetch}
-            label="Роль"
+            onChange={handleChangeManager}
+            isLoading={managersLoading}
+            refetch={managersRefetch}
+            label="Менеджер"
           />
         </Grid>
       </Grid>

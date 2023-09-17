@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded'
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PinDropRoundedIcon from '@mui/icons-material/PinDropRounded'
 import ExploreRoundedIcon from '@mui/icons-material/ExploreRounded'
 import LanRoundedIcon from '@mui/icons-material/LanRounded'
@@ -28,6 +29,12 @@ export const routes: Route[] = [
     title: 'Сотрудники',
     link: '/employees',
     Icon: PeopleAltRoundedIcon,
+  },
+  {
+    id: nanoid(),
+    title: 'Клиенты',
+    link: '/clients',
+    Icon: PeopleAltOutlinedIcon,
   },
   {
     id: nanoid(),

@@ -1,4 +1,9 @@
-import { BaseSyntheticEvent } from 'react'
+import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
+import { UploadFile } from '@/features/employees/ui/upload-file/upload-file'
+import { Filters } from '@/shared/api/filters/filters'
+import { Error } from '@/shared/http'
+import { formErrors } from '@/shared/utils/form-errors'
+import { LoadingButton } from '@mui/lab'
 import {
   Alert,
   AlertTitle,
@@ -13,21 +18,15 @@ import {
   Select,
   TextField,
 } from '@mui/material'
-import { LoadingButton } from '@mui/lab'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { useQuery } from '@tanstack/react-query'
+import { BaseSyntheticEvent } from 'react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
-
 import { FormInputs } from './initial-data'
-import { UploadFile } from '../upload-file/upload-file'
-import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
-import { formErrors } from '@/shared/utils/form-errors'
-import { Error } from '@/shared/http'
 import { branchesSort } from '@/shared/utils/branches-sort'
-import { Filters } from '@/shared/api/filters/filters'
 
-interface EmployeeFormProps {
+interface ClientFormProps {
   error: string
   initialData: FormInputs
   submit: (
@@ -38,7 +37,7 @@ interface EmployeeFormProps {
   titleSubmit: string
 }
 
-export const EmployeeForm = (props: EmployeeFormProps) => {
+export const ClientForm = (props: ClientFormProps) => {
   const { error, initialData, submit, requiredPassword, titleSubmit } = props
 
   const {
@@ -79,7 +78,15 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
     },
   })
 
-  const { data: roles } = useQuery(['roles'], () => Filters.getRoles('client'))
+  const { data: orients } = useQuery({
+    queryFn: () => Filters.getOrients(),
+    queryKey: ['orients'],
+  })
+
+  const { data: managers } = useQuery({
+    queryFn: Filters.getManagers,
+    queryKey: ['managers'],
+  })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -97,6 +104,7 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
             //@ts-ignore
             control={control}
           />
+
           <Controller
             name="active"
             control={control}
@@ -298,24 +306,24 @@ export const EmployeeForm = (props: EmployeeFormProps) => {
               </FormControl>
             </Grid>
             <Grid xs={6} item>
-              <FormControl fullWidth error={!!errors.roles}>
-                <InputLabel>Роль *</InputLabel>
+              <FormControl fullWidth error={!!errors.manager_id}>
+                <InputLabel>Менеджер</InputLabel>
                 <Controller
-                  name="roles"
+                  name="manager_id"
                   control={control}
-                  rules={{ required: 'Обязательное поле' }}
                   render={({ field }) => (
-                    <Select {...field} multiple label="Роль *">
-                      {roles?.data.map(({ id, name }) => (
-                        <MenuItem key={id} value={name}>
+                    <Select {...field} label="Менеджер">
+                      <MenuItem value={''}>Удалить значение</MenuItem>
+                      {managers?.data.map(({ id, name }) => (
+                        <MenuItem key={id} value={id}>
                           {name}
                         </MenuItem>
                       ))}
                     </Select>
                   )}
                 />
-                {errors.roles &&
-                  errors.roles.message?.split(',').map((text) => (
+                {errors.manager_id &&
+                  errors.manager_id.message?.split(',').map((text) => (
                     <FormHelperText key={text} error>
                       {text}
                     </FormHelperText>

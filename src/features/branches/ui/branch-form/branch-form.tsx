@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { BranchesService } from '../../service/branches-service'
 import {
   Alert,
   AlertTitle,
@@ -20,6 +19,7 @@ import { FormInputs } from './initial-data'
 import { LoadingButton } from '@mui/lab'
 import { Error } from '@/shared/http'
 import { formErrors } from '@/shared/utils/form-errors'
+import { Filters } from '@/shared/api/filters/filters'
 
 interface BranchFormProps {
   error: string
@@ -59,7 +59,7 @@ export const BranchForm = (props: BranchFormProps) => {
   }
 
   const { data: branches } = useQuery({
-    queryFn: BranchesService.getTreeBranches,
+    queryFn: Filters.getBranchesTree,
     queryKey: ['branches-form'],
   })
 
@@ -102,11 +102,7 @@ export const BranchForm = (props: BranchFormProps) => {
             name="parent_id"
             control={control}
             render={({ field }) => (
-              <Select
-                label="Родительский регион"
-                {...field}
-                onChange={(event) => field.onChange(event.target.value)}
-              >
+              <Select label="Родительский регион" {...field}>
                 {branches?.data.map(({ id, name }) => (
                   <MenuItem key={id} value={id}>
                     {name}

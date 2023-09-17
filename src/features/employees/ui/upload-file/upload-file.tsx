@@ -3,12 +3,13 @@ import { ChangeEvent, useRef, useState } from 'react'
 import { Typography } from '@mui/material'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto'
 import { UseControllerProps, useController } from 'react-hook-form'
-import { FormInputs } from '../forms/initial-data'
+import { FormInputs as FormInputsEmployee } from '../forms/initial-data'
+import { FormInputs as FormInputsClient } from '@/features/clients/ui/client-form/initial-data'
 
 export const UploadFile = ({
   name,
   control,
-}: UseControllerProps<FormInputs>) => {
+}: UseControllerProps<FormInputsEmployee | FormInputsClient>) => {
   const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement | null>()
 
@@ -52,7 +53,7 @@ export const UploadFile = ({
               alt="avatar"
             />
 
-            <div className="absolute left-0 top-0 flex h-0 w-0 flex-col items-center justify-center rounded-full text-white transition group-hover:h-full group-hover:w-full group-hover:bg-gray-800/60">
+            <div className="absolute left-0 top-0 hidden h-0 w-0 flex-col items-center justify-center rounded-full text-white transition group-hover:flex group-hover:h-full group-hover:w-full group-hover:bg-gray-800/60">
               <AddAPhotoIcon fontSize="large" />
               <Typography className="mt-1">Загрузить аватар</Typography>
             </div>

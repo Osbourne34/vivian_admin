@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { OrientsService } from '../../service/orients-service'
 import { Box, Grid, TextField } from '@mui/material'
 import { ComboBox } from '@/shared/ui/combobox/combobox'
 import { ChangeEvent } from 'react'
 import { branchesSort } from '@/shared/utils/branches-sort'
+import { Filters } from '@/shared/api/filters/filters'
 
 interface OrientsFilterProps {
   search: string
@@ -29,7 +29,7 @@ export const OrientsFilter = (props: OrientsFilterProps) => {
     data: branches,
     isFetching: branchesLoading,
     refetch: branchesRefetch,
-  } = useQuery(['branches'], () => OrientsService.getBranches(), {
+  } = useQuery(['branches'], Filters.getBranches, {
     select: (data) => {
       const result = branchesSort(data.data)
 

@@ -1,6 +1,5 @@
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import { Column, Sort, Table } from '@/shared/ui/table'
-import { useDebounce } from '@/shared/hooks'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Error,
@@ -16,6 +15,7 @@ import { useRouter } from 'next/router'
 import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
 import { useModal } from '@/shared/ui/modal/context/modal-context'
 import { EditRole } from '../edit-role/edit-role'
+import debounce from 'lodash.debounce'
 
 export const Roles = () => {
   const { push } = useRouter()
@@ -32,12 +32,13 @@ export const Roles = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   const [search, setSearch] = useState('')
-  const debouncedSearchValue = useDebounce(search)
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
 
-  const { data, isError, isFetching } = useQuery<
-    ResponseWithPagination<Role[]>,
-    Error
-  >({
+  const {
+    data: roles,
+    isError,
+    isFetching,
+  } = useQuery<ResponseWithPagination<Role[]>, Error>({
     queryKey: ['roles', sort, page, rowsPerPage, debouncedSearchValue],
     queryFn: () =>
       RolesService.getRoles({
@@ -56,16 +57,21 @@ export const Roles = () => {
     retry: 0,
     keepPreviousData: true,
   })
+
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
     mutationFn: RolesService.deleteRole,
     onSuccess: (data) => {
-      queryClient.invalidateQueries([
-        'roles',
-        sort,
-        page,
-        rowsPerPage,
-        debouncedSearchValue,
-      ])
+      if (roles?.data.length === 1 && page !== 1) {
+        setPage((prevState) => prevState - 1)
+      } else {
+        queryClient.invalidateQueries([
+          'roles',
+          sort,
+          page,
+          rowsPerPage,
+          debouncedSearchValue,
+        ])
+      }
       closeConfirm()
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -99,8 +105,18 @@ export const Roles = () => {
     setPage(1)
   }
 
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setDebouncedSearchValue(value)
+      setPage(1)
+    }, 500),
+    [],
+  )
+
   const handleChangeSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value)
+    const value = event.target.value
+    setSearch(value)
+    debouncedSearch(value)
   }
 
   const handleUpdate = (id: number) => {
@@ -191,10 +207,10 @@ export const Roles = () => {
         </Box>
         <Table
           columns={columns}
-          data={data?.data}
+          data={roles?.data}
           onSort={handleSort}
           sort={sort}
-          count={data?.pagination.last_page || 1}
+          count={roles?.pagination.last_page || 1}
           page={page}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}

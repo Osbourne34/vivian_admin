@@ -53,12 +53,4 @@ export const RolesService = {
 
     return data
   },
-
-  getPermissions: async () => {
-    const { data } = await http<
-      ResponseWithData<{ id: number; name: string }[]>
-    >('api/filter/permissions')
-
-    return data
-  },
 }

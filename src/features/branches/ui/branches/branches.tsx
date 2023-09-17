@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Box, Paper, SelectChangeEvent, TextField } from '@mui/material'
@@ -19,6 +19,7 @@ import {
 } from '@/shared/http'
 import { useModal } from '@/shared/ui/modal/context/modal-context'
 import EditBranch from '../edit-branch/edit-branch'
+import debounce from 'lodash.debounce'
 
 export const Branches = () => {
   const router = useRouter()
@@ -35,21 +36,21 @@ export const Branches = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   const [search, setSearch] = useState('')
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
 
-  const debouncedSearch = useDebounce(search)
-
-  const { data, isFetching, isError } = useQuery<
-    ResponseWithPagination<Branch[]>,
-    Error
-  >({
-    queryKey: ['branches', sort, page, rowsPerPage, debouncedSearch],
+  const {
+    data: braches,
+    isFetching,
+    isError,
+  } = useQuery<ResponseWithPagination<Branch[]>, Error>({
+    queryKey: ['branches', sort, page, rowsPerPage, debouncedSearchValue],
     queryFn: () =>
       BranchesService.getBranches({
         page,
         perpage: rowsPerPage,
         orderby: sort.orderby,
         sort: sort.sort,
-        search: debouncedSearch,
+        search: debouncedSearchValue,
       }),
     onError: (error) => {
       if (error?.status === 401) {
@@ -63,13 +64,18 @@ export const Branches = () => {
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
     mutationFn: BranchesService.deleteBranch,
     onSuccess: (data) => {
-      queryClient.invalidateQueries([
-        'branches',
-        sort,
-        page,
-        rowsPerPage,
-        debouncedSearch,
-      ])
+      if (braches?.data.length === 1 && page !== 1) {
+        setPage((prevState) => prevState - 1)
+      } else {
+        queryClient.invalidateQueries([
+          'branches',
+          sort,
+          page,
+          rowsPerPage,
+          debouncedSearchValue,
+        ])
+      }
+
       closeConfirm()
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -103,8 +109,18 @@ export const Branches = () => {
     setPage(1)
   }
 
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setDebouncedSearchValue(value)
+      setPage(1)
+    }, 500),
+    [],
+  )
+
   const handleChangeSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value)
+    const value = event.target.value
+    debouncedSearch(value)
+    setSearch(value)
   }
 
   const handleUpdate = (id: number) => {
@@ -123,10 +139,6 @@ export const Branches = () => {
     })
   }
 
-  useEffect(() => {
-    setPage(1)
-  }, [debouncedSearch])
-
   return (
     <Paper elevation={4}>
       <Box
@@ -144,10 +156,10 @@ export const Branches = () => {
         />
       </Box>
       <NestedTable
-        data={data?.data || []}
+        data={braches?.data || []}
         onSort={handleSort}
         sort={sort}
-        count={data?.pagination.last_page || 1}
+        count={braches?.pagination.last_page || 1}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}

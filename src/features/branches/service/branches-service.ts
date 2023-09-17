@@ -66,16 +66,4 @@ export const BranchesService = {
 
     return data
   },
-
-  getTreeBranches: async () => {
-    const { data } = await http<
-      ResponseWithData<{ id: number; name: string }[]>
-    >('api/filter/branches', {
-      params: {
-        tree: '1',
-      },
-    })
-
-    return data
-  },
 }

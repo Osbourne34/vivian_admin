@@ -59,23 +59,4 @@ export const OrientsService = {
 
     return data
   },
-
-  getBranches: async () => {
-    const { data } = await http<
-      ResponseWithData<
-        {
-          id: number
-          name: string
-          parent_id: number
-          parent_name: string | null
-        }[]
-      >
-    >(`api/filter/branches`, {
-      params: {
-        tree: 0,
-      },
-    })
-
-    return data
-  },
 }

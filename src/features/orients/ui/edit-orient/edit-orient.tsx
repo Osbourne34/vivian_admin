@@ -87,8 +87,8 @@ export const EditOrient = (props: EditOrientProps) => {
           onCancel={() => closeModal()}
           submit={handleSubmit}
           initialData={{
-            branch_id: orient ? orient.branch_id : '',
-            name: orient ? orient.name : '',
+            branch_id: orient?.branch_id ? orient.branch_id : '',
+            name: orient?.name ? orient.name : '',
           }}
           submitTitle="Сохранить"
         />

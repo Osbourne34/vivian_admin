@@ -13,13 +13,13 @@ import {
   TextField,
 } from '@mui/material'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
-import { OrientsService } from '../../service/orients-service'
 import { useQuery } from '@tanstack/react-query'
 import { FormInputs } from './initial-data'
 import { formErrors } from '@/shared/utils/form-errors'
 import { Error } from '@/shared/http'
 import { LoadingButton } from '@mui/lab'
 import { branchesSort } from '@/shared/utils/branches-sort'
+import { Filters } from '@/shared/api/filters/filters'
 
 interface OrientFormProps {
   error: string
@@ -38,9 +38,9 @@ export const OrientForm = (props: OrientFormProps) => {
     reset,
     formState: { errors, isSubmitting },
     setError,
+    getValues,
   } = useForm<FormInputs>({
     defaultValues: initialData,
-    values: initialData,
   })
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
@@ -59,20 +59,16 @@ export const OrientForm = (props: OrientFormProps) => {
     }
   }
 
-  const { data: branches } = useQuery(
-    ['branches'],
-    () => OrientsService.getBranches(),
-    {
-      select: (data) => {
-        const result = branchesSort(data.data)
+  const { data: branches } = useQuery(['branches'], Filters.getBranches, {
+    select: (data) => {
+      const result = branchesSort(data.data)
 
-        return {
-          data: result,
-          status: data.status,
-        }
-      },
+      return {
+        data: result,
+        status: data.status,
+      }
     },
-  )
+  })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

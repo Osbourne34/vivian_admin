@@ -16,8 +16,8 @@ import {
 import { Error } from '@/shared/http'
 import { formErrors } from '@/shared/utils/form-errors'
 import { useQuery } from '@tanstack/react-query'
-import { RolesService } from '../../service/roles-service'
 import { LoadingButton } from '@mui/lab'
+import { Filters } from '@/shared/api/filters/filters'
 
 interface RoleFormProps {
   error: string
@@ -59,7 +59,7 @@ export const RoleForm = (props: RoleFormProps) => {
 
   const { data: permissions } = useQuery({
     queryKey: ['permissions'],
-    queryFn: RolesService.getPermissions,
+    queryFn: Filters.getPermissions,
   })
 
   return (
