@@ -2,7 +2,7 @@ import { BaseSyntheticEvent, ReactElement, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Paper, Typography } from '@mui/material'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 
@@ -19,7 +19,6 @@ import { Error, ResponseWithMessage } from '@/shared/http'
 const EditEmployees = () => {
   const { query, push } = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [initFormData, setInitFormData] = useState<FormInputs>(initialData)
   const [error, setError] = useState('')

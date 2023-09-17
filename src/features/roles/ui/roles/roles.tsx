@@ -189,36 +189,34 @@ export const Roles = () => {
   }, [debouncedSearchValue])
 
   return (
-    <>
-      <Paper elevation={4}>
-        <Box
-          className="p-3"
-          sx={(theme) => ({
-            borderBottom: `1px solid ${theme.palette.action.disabledBackground}`,
-          })}
-        >
-          <TextField
-            onChange={handleChangeSearch}
-            value={search}
-            label="Поиск..."
-            size="small"
-            fullWidth
-          />
-        </Box>
-        <Table
-          columns={columns}
-          data={roles?.data}
-          onSort={handleSort}
-          sort={sort}
-          count={roles?.pagination.last_page || 1}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          isLoading={isFetching}
-          isError={isError}
+    <Paper elevation={4}>
+      <Box
+        className="p-3"
+        sx={(theme) => ({
+          borderBottom: `1px solid ${theme.palette.action.disabledBackground}`,
+        })}
+      >
+        <TextField
+          onChange={handleChangeSearch}
+          value={search}
+          label="Поиск..."
+          size="small"
+          fullWidth
         />
-      </Paper>
-    </>
+      </Box>
+      <Table
+        columns={columns}
+        data={roles?.data}
+        onSort={handleSort}
+        sort={sort}
+        count={roles?.pagination.last_page || 1}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        isLoading={isFetching}
+        isError={isError}
+      />
+    </Paper>
   )
 }

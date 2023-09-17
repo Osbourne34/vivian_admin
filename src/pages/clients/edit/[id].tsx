@@ -7,7 +7,7 @@ import React, {
 import { Layout } from '@/shared/layouts/layout'
 import { useRouter } from 'next/router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import {
   FormInputs,
   initialData,
@@ -21,7 +21,6 @@ import { ClientForm } from '@/features/clients/ui/client-form/client-form'
 const ClientEdit = () => {
   const { query, push } = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [initFormData, setInitFormData] = useState<FormInputs>(initialData)
   const [error, setError] = useState('')

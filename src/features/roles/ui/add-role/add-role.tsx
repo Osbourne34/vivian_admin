@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Button, Dialog, DialogTitle } from '@mui/material'
@@ -11,7 +11,6 @@ import { RolesService } from '../../service/roles-service'
 export const AddRole = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [error, setError] = useState('')
   const [open, setOpen] = useState(false)

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { CircularProgress } from '@mui/material'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useModal } from '@/shared/ui/modal/context/modal-context'
@@ -21,7 +21,6 @@ export const EditRole = (props: EditRoleProps) => {
 
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const { closeModal } = useModal()
   const [role, setRole] = useState<Role>()

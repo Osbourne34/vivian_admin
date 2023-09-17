@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { CircularProgress } from '@mui/material'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { OrientForm } from '../orient-form/orient-form'
@@ -22,7 +22,6 @@ export const EditOrient = (props: EditOrientProps) => {
 
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const { closeModal } = useModal()
   const [orient, setOrient] = useState<Orient>()

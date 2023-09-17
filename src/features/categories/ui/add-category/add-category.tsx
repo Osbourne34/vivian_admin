@@ -1,14 +1,14 @@
-import { useState } from 'react'
 import { Button, Dialog, DialogTitle } from '@mui/material'
-import { OrientForm } from '../orient-form/orient-form'
-import { FormInputs, initialData } from '../orient-form/initial-data'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Error, ResponseWithMessage } from '@/shared/http'
-import { OrientsService } from '../../service/orients-service'
 import { useRouter } from 'next/router'
+import { useState } from 'react'
+import { CategoryForm } from '../category-form/category-form'
+import { FormInputs, initialData } from '../category-form/initial-data'
+import { Error, ResponseWithMessage } from '@/shared/http'
+import { CategoriesService } from '../../service/categories-service'
 import { enqueueSnackbar } from 'notistack'
 
-export const AddOrient = () => {
+export const AddCategory = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -16,21 +16,20 @@ export const AddOrient = () => {
   const [open, setOpen] = useState(false)
 
   const createMutation = useMutation<ResponseWithMessage, Error, FormInputs>({
-    mutationFn: OrientsService.createOrient,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries(['orients'])
+    mutationFn: CategoriesService.createCategory,
+    onSuccess(data) {
+      queryClient.invalidateQueries(['categories'])
       handleClose()
       enqueueSnackbar(data.message, {
         variant: 'success',
       })
     },
-    onError: (err) => {
+    onError(err) {
       if (err.status === 401) {
         router.push('/login')
         return
       }
-
-      setError(err?.message!)
+      setError(err.message!)
     },
   })
 
@@ -53,12 +52,11 @@ export const AddOrient = () => {
   return (
     <>
       <Button variant="contained" onClick={handleClickOpen}>
-        Создать ориентир
+        Создать категорию
       </Button>
-
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Создание ориентира</DialogTitle>
-        <OrientForm
+        <DialogTitle>Создание категорий</DialogTitle>
+        <CategoryForm
           error={error}
           initialData={initialData}
           submit={handleSubmit}

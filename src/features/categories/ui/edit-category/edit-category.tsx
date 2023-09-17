@@ -1,42 +1,39 @@
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
-
-import { enqueueSnackbar } from 'notistack'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useModal } from '@/shared/ui/modal/context/modal-context'
-import { BranchDetail } from '../../types/Branch'
 import { Error, ResponseWithMessage } from '@/shared/http'
-import { BranchesService } from '../../service/branches-service'
-import { FormInputs } from '../branch-form/initial-data'
+import { useModal } from '@/shared/ui/modal/context/modal-context'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import { CategoriesService } from '../../service/categories-service'
+import { enqueueSnackbar } from 'notistack'
+import { FormInputs } from '../category-form/initial-data'
+import { Category } from '../../types/category'
 import { CircularProgress } from '@mui/material'
-import { BranchForm } from '../branch-form/branch-form'
+import { CategoryForm } from '../category-form/category-form'
 
-interface EditBranchProps {
+interface EditCategoryProps {
   id: number
 }
 
-const EditBranch = (props: EditBranchProps) => {
+export const EditCategory = (props: EditCategoryProps) => {
   const { id } = props
 
   const router = useRouter()
   const queryClient = useQueryClient()
 
   const { closeModal } = useModal()
-  const [branch, setBranch] = useState<BranchDetail>()
+
+  const [category, setCategory] = useState<Category>()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
   const updateMutation = useMutation<
     ResponseWithMessage,
     Error,
-    {
-      id: number
-      body: { name: string; parent_id: string; warehouse: boolean }
-    }
+    { id: number; body: { name: string } }
   >({
-    mutationFn: BranchesService.updateBranch,
+    mutationFn: CategoriesService.updateCategory,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['branches'])
+      queryClient.invalidateQueries(['categories'])
       closeModal()
       enqueueSnackbar(data.message, {
         variant: 'success',
@@ -61,18 +58,18 @@ const EditBranch = (props: EditBranchProps) => {
   }
 
   useEffect(() => {
-    const getOrient = async () => {
+    const getCategory = async () => {
       setIsLoading(true)
       try {
-        const { data } = await BranchesService.getBranch(id)
-        setBranch(data)
+        const { data } = await CategoriesService.getCategory(id)
+        setCategory(data)
       } catch (error) {
       } finally {
         setIsLoading(false)
       }
     }
 
-    getOrient()
+    getCategory()
   }, [id])
 
   return (
@@ -82,14 +79,12 @@ const EditBranch = (props: EditBranchProps) => {
           <CircularProgress />
         </div>
       ) : (
-        <BranchForm
+        <CategoryForm
           error={error}
           onCancel={() => closeModal()}
           submit={handleSubmit}
           initialData={{
-            name: branch?.name ? branch.name : '',
-            parent_id: branch?.parent_id ? String(branch?.parent_id) : '',
-            warehouse: Boolean(branch?.warehouse),
+            name: category?.name || '',
           }}
           submitTitle="Сохранить"
         />
@@ -97,5 +92,3 @@ const EditBranch = (props: EditBranchProps) => {
     </>
   )
 }
-
-export default EditBranch

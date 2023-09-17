@@ -1,29 +1,24 @@
-import { useCallback, useState } from 'react'
-import { useRouter } from 'next/router'
-
-import { Paper, SelectChangeEvent } from '@mui/material'
-import { enqueueSnackbar } from 'notistack'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-import { OrientsFilter } from '../orients-filter/orients-filter'
-import { EditOrient } from '../edit-orient/edit-orient'
-import { OrientsService } from '../../service/orients-service'
-import { Orient } from '../../types/Orient'
-
-import { useModal } from '@/shared/ui/modal/context/modal-context'
-import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
-
-import { Column, Sort, Table } from '@/shared/ui/table'
-import { Actions } from '@/shared/ui/actions/actions'
-
 import {
   Error,
   ResponseWithMessage,
   ResponseWithPagination,
 } from '@/shared/http'
+import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
+import { useModal } from '@/shared/ui/modal/context/modal-context'
+import { Column, Sort } from '@/shared/ui/table/types'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/router'
+import { ChangeEvent, useCallback, useState } from 'react'
+import { Category } from '../../types/category'
+import { CategoriesService } from '../../service/categories-service'
+import { enqueueSnackbar } from 'notistack'
+import { Box, Paper, SelectChangeEvent, TextField } from '@mui/material'
 import debounce from 'lodash.debounce'
+import { Actions } from '@/shared/ui/actions/actions'
+import { Table } from '@/shared/ui/table'
+import { EditCategory } from '../edit-category/edit-category'
 
-export const Orients = () => {
+export const Categories = () => {
   const { push } = useRouter()
   const queryClient = useQueryClient()
   const { openConfirm, closeConfirm } = useConfirmDialog()
@@ -36,27 +31,17 @@ export const Orients = () => {
 
   const [page, setPage] = useState<number>(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-
   const [search, setSearch] = useState('')
   const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
-  const [branch, setBranch] = useState<number | null>(null)
 
   const {
-    data: orients,
+    data: categories,
     isError,
     isFetching,
-  } = useQuery<ResponseWithPagination<Orient[]>, Error>({
-    queryKey: [
-      'orients',
-      sort,
-      page,
-      rowsPerPage,
-      debouncedSearchValue,
-      branch,
-    ],
+  } = useQuery<ResponseWithPagination<Category[]>, Error>({
+    queryKey: ['categories', sort, page, rowsPerPage, debouncedSearchValue],
     queryFn: () =>
-      OrientsService.getOrients({
-        branch_id: branch,
+      CategoriesService.getCategories({
         orderby: sort.orderby,
         sort: sort.sort,
         page: page,
@@ -74,18 +59,17 @@ export const Orients = () => {
   })
 
   const deleteMutation = useMutation<ResponseWithMessage, Error, number>({
-    mutationFn: OrientsService.deleteOrient,
+    mutationFn: CategoriesService.deleteCategoty,
     onSuccess: (data) => {
-      if (orients?.data.length === 1 && page !== 1) {
+      if (categories?.data.length === 1 && page !== 1) {
         setPage((prevState) => prevState - 1)
       } else {
         queryClient.invalidateQueries([
-          'orients',
+          'categories',
           sort,
           page,
           rowsPerPage,
           debouncedSearchValue,
-          branch,
         ])
       }
       closeConfirm()
@@ -129,16 +113,22 @@ export const Orients = () => {
     [],
   )
 
+  const handleChangeSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    setSearch(value)
+    debouncedSearch(value)
+  }
+
   const handleUpdate = (id: number) => {
     openModal({
-      title: 'Редактирование ориентира',
-      modal: <EditOrient id={id} />,
+      title: 'Редактирование категорий',
+      modal: <EditCategory id={id} />,
     })
   }
 
   const handleDelete = (id: number) => {
     openConfirm({
-      text: 'Вы действительно хотите удалить этот ориентир?',
+      text: 'Вы действительно хотите удалить эту категорию?',
       onConfirm: async () => {
         await deleteMutation.mutateAsync(id)
       },
@@ -158,11 +148,6 @@ export const Orients = () => {
       sortable: true,
     },
     {
-      key: 'branch_id',
-      title: 'Регион',
-      sortable: true,
-    },
-    {
       key: 'action',
       title: 'Действия',
       align: 'right',
@@ -179,24 +164,27 @@ export const Orients = () => {
   ]
 
   return (
-    <Paper elevation={4}>
-      <OrientsFilter
-        search={search}
-        onChangeSearch={(value) => {
-          debouncedSearch(value)
-          setSearch(value)
-        }}
-        onChangeBranch={(value) => {
-          setBranch(value)
-          setPage(1)
-        }}
-      />
+    <Paper>
+      <Box
+        className="p-3"
+        sx={(theme) => ({
+          borderBottom: `1px solid ${theme.palette.action.disabledBackground}`,
+        })}
+      >
+        <TextField
+          onChange={handleChangeSearch}
+          value={search}
+          label="Поиск..."
+          size="small"
+          fullWidth
+        />
+      </Box>
       <Table
         columns={columns}
-        data={orients?.data}
+        data={categories?.data}
         onSort={handleSort}
         sort={sort}
-        count={orients?.pagination.last_page || 1}
+        count={categories?.pagination.last_page || 1}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}

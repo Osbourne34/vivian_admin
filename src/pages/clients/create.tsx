@@ -4,7 +4,7 @@ import { Layout } from '@/shared/layouts/layout'
 import { ClientForm } from '@/features/clients/ui/client-form/client-form'
 import { useRouter } from 'next/router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { Error, ResponseWithMessage } from '@/shared/http'
 import { ClientsService } from '@/features/clients/service/client-service'
 import {
@@ -15,7 +15,6 @@ import {
 const CreateClient = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [error, setError] = useState('')
 

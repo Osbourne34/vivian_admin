@@ -18,7 +18,7 @@ import {
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { LoadingButton } from '@mui/lab'
 import { useRouter } from 'next/router'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BranchesService } from '@/features/branches'
 
@@ -34,7 +34,6 @@ const Edit = () => {
   const router = useRouter()
   const { id } = router.query
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const { data: branches } = useQuery(['branches'], () =>
     //@ts-ignore

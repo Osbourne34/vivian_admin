@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { Button, Dialog, DialogTitle } from '@mui/material'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { BranchesService } from '../../service/branches-service'
@@ -14,7 +14,6 @@ import { Error, ResponseWithMessage } from '@/shared/http'
 export const AddBranch = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [error, setError] = useState('')
   const [open, setOpen] = useState(false)

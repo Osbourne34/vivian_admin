@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { Paper, Typography } from '@mui/material'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 
 import { EmployeesService } from '@/features/employees'
 import { EmployeeForm } from '@/features/employees/ui/forms/employee-form'
@@ -19,7 +19,6 @@ import { Error, ResponseWithMessage } from '@/shared/http'
 const CreateEmployees = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const [error, setError] = useState('')
 

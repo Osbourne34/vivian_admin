@@ -19,7 +19,7 @@ import { useForm, Controller, SubmitHandler } from 'react-hook-form'
 import { LoadingButton } from '@mui/lab'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BranchesService } from '@/features/branches'
-import { useSnackbar } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 
 import { Error, ResponseWithMessage } from '@/shared/http'
 import { useRouter } from 'next/router'
@@ -33,7 +33,6 @@ type FormInputs = {
 const Create = () => {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { enqueueSnackbar } = useSnackbar()
 
   const { data: branches } = useQuery(['branches'], () =>
     //@ts-ignore
