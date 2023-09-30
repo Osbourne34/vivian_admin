@@ -1,3 +1,3 @@
 export * from './http/http'
-export * from './types/Response'
-export * from './types/Error'
+export * from './types/response'
+export * from './types/error'

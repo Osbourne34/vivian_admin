@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { LogoutButton } from '@/features/auth'
 import { IconButton, Menu, Avatar as AvatarMUI } from '@mui/material'
 
-export const Avatar = () => {
+export const AccountSetting = () => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -20,11 +20,11 @@ export const Avatar = () => {
         <AvatarMUI />
       </IconButton>
       <Menu
-        sx={{ mt: '45px' }}
+        sx={{ mt: 1 }}
         id="menu-appbar"
         anchorEl={anchorElUser}
         anchorOrigin={{
-          vertical: 'top',
+          vertical: 'bottom',
           horizontal: 'right',
         }}
         keepMounted

@@ -1,5 +1,5 @@
 import { ResponseWithData, http } from '@/shared/http'
-import { User } from '../types/User'
+import { User } from '../types/user'
 
 export const AuthService = {
   login: async (body: { phone: string; password: string }) => {
@@ -10,7 +10,7 @@ export const AuthService = {
     return data
   },
 
-  logout: async () => {
+  logout: () => {
     return http.post('api/auth/logout')
   },
 }

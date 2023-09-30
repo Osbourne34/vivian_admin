@@ -2,12 +2,13 @@ import { Alert, FormControl, FormHelperText, TextField } from '@mui/material'
 import { useForm, Controller, SubmitHandler } from 'react-hook-form'
 import LoadingButton from '@mui/lab/LoadingButton'
 
-import { NumericFormatCustom } from '../phone-input/phone-input'
+import { NumericFormatCustom } from '../../../../shared/ui/phone-input/phone-input'
 import { useState } from 'react'
 import { AuthService } from '../../service/authService'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/router'
 import { Error } from '@/shared/http'
+import { formErrors } from '@/shared/utils/form-errors'
 
 interface FormInputs {
   phone: string
@@ -46,16 +47,12 @@ export const LoginForm = () => {
       const err = error as Error
 
       if (err?.errors) {
-        let temp = new Map()
-        err.errors.forEach((item) => {
-          let key = temp.get(item.input) ?? []
-          key.push(item.message)
-          temp.set(item.input, key)
-        })
+        const errors = formErrors(err.errors)
 
-        temp.forEach((value, key) => {
+        errors.forEach((value, key) => {
           setErrorForm(key, { message: value.join(',') })
         })
+        return
       }
 
       setError(err?.message!)
@@ -73,11 +70,14 @@ export const LoginForm = () => {
       <Controller
         name="phone"
         control={control}
-        rules={{ required: 'Обязательное поле' }}
+        rules={{
+          required: 'Обязательное поле',
+          minLength: { value: 9, message: 'Невалидный номер' },
+        }}
         render={({ field }) => (
           <FormControl>
             <TextField
-              label="Номер телефона"
+              label="Номер телефона *"
               InputProps={{
                 inputComponent: NumericFormatCustom as any,
               }}

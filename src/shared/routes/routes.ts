@@ -11,12 +11,23 @@ import LanRoundedIcon from '@mui/icons-material/LanRounded'
 import { OverridableComponent } from '@mui/material/OverridableComponent'
 import { SvgIconTypeMap } from '@mui/material'
 
-type Route = {
+type RouteBase = {
   id: string
   title: string
-  link: string
   Icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
 }
+
+type RouteWithLink = RouteBase & {
+  link: string
+  children?: never
+}
+
+type RouteWithChildren = RouteBase & {
+  link?: never
+  children: Route[]
+}
+
+export type Route = RouteWithLink | RouteWithChildren
 
 export const routes: Route[] = [
   {
@@ -24,18 +35,6 @@ export const routes: Route[] = [
     title: 'Дашбоард',
     link: '/',
     Icon: DashboardRoundedIcon,
-  },
-  {
-    id: nanoid(),
-    title: 'Сотрудники',
-    link: '/employees',
-    Icon: PeopleAltRoundedIcon,
-  },
-  {
-    id: nanoid(),
-    title: 'Клиенты',
-    link: '/clients',
-    Icon: PeopleAltOutlinedIcon,
   },
   {
     id: nanoid(),
@@ -57,8 +56,27 @@ export const routes: Route[] = [
   },
   {
     id: nanoid(),
-    title: 'Роли',
-    link: '/roles',
+    title: 'Пользователи',
     Icon: LanRoundedIcon,
+    children: [
+      {
+        id: nanoid(),
+        title: 'Сотрудники',
+        link: '/employees',
+        Icon: PeopleAltRoundedIcon,
+      },
+      {
+        id: nanoid(),
+        title: 'Клиенты',
+        link: '/clients',
+        Icon: PeopleAltOutlinedIcon,
+      },
+      {
+        id: nanoid(),
+        title: 'Роли',
+        link: '/roles',
+        Icon: LanRoundedIcon,
+      },
+    ],
   },
 ]

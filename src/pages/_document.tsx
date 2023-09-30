@@ -9,7 +9,7 @@ import Document, {
 
 import createEmotionServer from '@emotion/server/create-instance'
 import { AppType } from 'next/app'
-import { theme, createEmotionCache, roboto } from '@/shared/theme'
+import { createEmotionCache, roboto } from '@/shared/theme'
 
 import { MyAppProps } from './_app'
 
@@ -43,7 +43,7 @@ MyDocument.getInitialProps = async (ctx: DocumentContext) => {
   ctx.renderPage = () =>
     originalRenderPage({
       enhanceApp: (
-        App: React.ComponentType<React.ComponentProps<AppType> & MyAppProps>
+        App: React.ComponentType<React.ComponentProps<AppType> & MyAppProps>,
       ) =>
         function EnhanceApp(props) {
           return <App emotionCache={cache} {...props} />

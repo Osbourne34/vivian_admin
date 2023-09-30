@@ -21,7 +21,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 
 import { FormInputs } from './initial-data'
 import { UploadFile } from '../upload-file/upload-file'
-import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
+import { NumericFormatCustom } from '@/shared/ui/phone-input/phone-input'
 import { formErrors } from '@/shared/utils/form-errors'
 import { Error } from '@/shared/http'
 import { branchesSort } from '@/shared/utils/branches-sort'

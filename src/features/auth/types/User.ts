@@ -3,7 +3,9 @@ export interface User {
   name: string
   phone: string
   phone_verified_at: string
-  verification: string
+  avatar: string | null
+  verification: boolean
+  roles: string[]
   permissions: string[]
   created_at: string
 }

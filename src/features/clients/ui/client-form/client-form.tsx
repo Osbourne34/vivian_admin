@@ -1,4 +1,4 @@
-import { NumericFormatCustom } from '@/features/auth/ui/phone-input/phone-input'
+import { NumericFormatCustom } from '@/shared/ui/phone-input/phone-input'
 import { UploadFile } from '@/features/employees/ui/upload-file/upload-file'
 import { Filters } from '@/shared/api/filters/filters'
 import { Error } from '@/shared/http'

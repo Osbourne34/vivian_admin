@@ -7,12 +7,10 @@ import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 import Toolbar from '@mui/material/Toolbar'
 
-import { Avatar } from './avatar/avatar'
+import { AccountSetting } from './account-setting/account-setting'
 import { SidebarMenu } from './sidebar-menu/sidebar-menu'
-import { useColorMode } from '../theme/theme/color-mode-context'
-import Brightness4Icon from '@mui/icons-material/Brightness4'
-import Brightness7Icon from '@mui/icons-material/Brightness7'
-import { useTheme } from '@mui/material'
+
+import { ThemeToggler } from '../theme'
 
 const drawerWidth = 300
 
@@ -22,27 +20,14 @@ interface LayoutProps {
 
 export const Layout = (props: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = React.useState(false)
-  const { toggleColorMode } = useColorMode()
-  const theme = useTheme()
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
 
-  const drawer = (
-    <div>
-      <SidebarMenu />
-    </div>
-  )
-
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        sx={(theme) => ({
-          zIndex: theme.zIndex.drawer + 1,
-        })}
-      >
+      <AppBar position="fixed">
         <Toolbar>
           <IconButton
             color="inherit"
@@ -53,18 +38,8 @@ export const Layout = (props: LayoutProps) => {
           </IconButton>
 
           <div className="ml-auto space-x-4">
-            <IconButton
-              sx={{ ml: 1 }}
-              onClick={toggleColorMode}
-              color="inherit"
-            >
-              {theme.palette.mode === 'dark' ? (
-                <Brightness7Icon />
-              ) : (
-                <Brightness4Icon />
-              )}
-            </IconButton>
-            <Avatar />
+            <ThemeToggler />
+            <AccountSetting />
           </div>
         </Toolbar>
       </AppBar>
@@ -87,8 +62,7 @@ export const Layout = (props: LayoutProps) => {
             },
           }}
         >
-          <Toolbar />
-          {drawer}
+          <SidebarMenu />
         </Drawer>
         <Drawer
           variant="permanent"
@@ -100,8 +74,7 @@ export const Layout = (props: LayoutProps) => {
             },
           }}
         >
-          <Toolbar />
-          {drawer}
+          <SidebarMenu />
         </Drawer>
       </Box>
       <Box
