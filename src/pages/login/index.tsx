@@ -10,9 +10,9 @@ const Login = () => {
         <title>Login</title>
       </Head>
 
-      <div className="flex items-center bg-[url('/images/bg/main-bg.svg')] bg-cover bg-center bg-no-repeat">
+      <div className="flex min-h-screen items-center bg-[url('/images/bg/main-bg.svg')] bg-cover bg-center bg-no-repeat">
         <Container maxWidth="sm">
-          <Card elevation={6} className="rounded-lg">
+          <Card elevation={6}>
             <img
               width={172}
               height={57}
@@ -22,8 +22,8 @@ const Login = () => {
             />
 
             <CardContent>
-              <Typography variant="h5" align="center" mb={2}>
-                Логин
+              <Typography variant="h4" align="center" mb={2.5}>
+                Войти
               </Typography>
 
               <LoginForm />

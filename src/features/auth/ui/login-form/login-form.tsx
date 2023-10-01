@@ -60,7 +60,7 @@ export const LoginForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-6">
       {error && (
         <Alert variant="filled" severity="error">
           {error}
@@ -106,7 +106,7 @@ export const LoginForm = () => {
           <FormControl>
             <TextField
               type="password"
-              label="Пароль"
+              label="Пароль *"
               variant="outlined"
               error={!!errors.password}
               {...field}
