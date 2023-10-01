@@ -23,7 +23,7 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 
 import { Sort } from '@/shared/ui/table'
 
-import { Branch } from '../../types/Branch'
+import { Branch } from '../../types/branch'
 import { useState } from 'react'
 import { Actions } from '@/shared/ui/actions/actions'
 

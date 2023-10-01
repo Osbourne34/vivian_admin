@@ -4,7 +4,7 @@ import LoadingButton from '@mui/lab/LoadingButton'
 
 import { NumericFormatCustom } from '../../../../shared/ui/phone-input/phone-input'
 import { useState } from 'react'
-import { AuthService } from '../../service/authService'
+import { AuthService } from '../../service/auth-service'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/router'
 import { Error } from '@/shared/http'

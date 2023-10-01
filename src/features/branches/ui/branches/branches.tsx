@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { BranchesService } from '../../service/branches-service'
 import { NestedTable } from '../nested-table/nested-table'
-import { Branch } from '../../types/Branch'
+import { Branch } from '../../types/branch'
 
 import { useConfirmDialog } from '@/shared/ui/confirm-dialog/context/confirm-dialog-context'
 import { Sort } from '@/shared/ui/table'

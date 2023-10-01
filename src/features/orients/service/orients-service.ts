@@ -4,7 +4,7 @@ import {
   ResponseWithPagination,
   http,
 } from '@/shared/http'
-import { Orient } from '../types/Orient'
+import { Orient } from '../types/orient'
 
 export const OrientsService = {
   getOrients: async (params: {

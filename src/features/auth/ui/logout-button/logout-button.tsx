@@ -1,5 +1,5 @@
 import { MenuItem, Typography } from '@mui/material'
-import { AuthService } from '../../service/authService'
+import { AuthService } from '../../service/auth-service'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/router'
 
